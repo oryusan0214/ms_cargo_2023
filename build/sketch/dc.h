@@ -1,3 +1,4 @@
+#line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\dc.h"
 /* -------------------------------------------------------------------------- */
 /* dc.h																  */
 /* ＣＬ２３・ＳＤ３２・ＲＤ４Ｃ												  */
@@ -25,8 +26,6 @@
 #define MS_DC_BUSY          (   -3 )			/* サーボビジー				  */
 #define MS_DC_NOSET       ( 0xEFFF )			/* サーボ設定無し			  */
 
-#define MS_DC_ANG_MIN             0             /* DCモータの最大角          */
-#define MS_DC_ANG_MAX           270             /* DCモータの最小角          */
 /* 不明 */
 #define DCMIN                   150             /* 最小パルス幅              */
 #define DCMAX                   600             /* 最大パルス幅              */

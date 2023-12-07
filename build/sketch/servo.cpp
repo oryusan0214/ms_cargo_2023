@@ -1,6 +1,7 @@
+#line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\servo.cpp"
 /* -------------------------------------------------------------------------- */
-/* dc.cpp																  */
-/* DCモーター制御に関わる処理												  */
+/* servo.cpp																  */
+/* サーボモーター制御に関わる処理											  */
 /* 出力系はサーボと同じ処理方法で対応すると良い								  */
 /* -------------------------------------------------------------------------- */
 /* 番号		更新履歴								日付		氏名		  */
@@ -19,192 +20,185 @@
 #include <stdlib.h>								/* メモリ操作				  */
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
-#include "dc.h"								/* サーボに関わるヘッダ		  */
+#include "servo.h"								/* サーボに関わるヘッダ		  */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言(ローカル)												  */
 /* -------------------------------------------------------------------------- */
-void msDCInitRecord(DC_MNG* mng);
+void msServoInitRecord(SERVO_MNG* mng);
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
 /* -------------------------------------------------------------------------- */
 typedef struct {
-	SLNG dcid;									/* サーボモータ番号			  */
+	SLNG servoid;								/* サーボモータ番号			  */
 	SLNG timerid;								/* タイマーID				  */
 	UCHR busyflg;								/* ビジーフラグ(サーボ個数分) */
 	SSHT oldangles;								/* 前回設定角度たち			  */
-} DC_MNG;
+} SERVO_MNG;
 
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-DC_MNG g_Mng[MS_DC_MAX];						/* DC管理データ				  */
+SERVO_MNG g_Mng[MS_SERVO_MAX];					/* サーボ管理データ			  */
+PCA9685 pwm = PCA9685(0x40);    //PCA9685のアドレス指定（アドレスジャンパ未接続時）
+PCA9685 pwm2 = PCA9685(0x41);   //PCA9685のアドレス指定（A0接続時）
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCInit												  */
-/* 機能名		：DCモータの初期化処理										  */
+/* 関数名		：msServoInit												  */
+/* 機能名		：サーボモータの初期化処理									  */
 /* 機能概要		：グローバル変数等の初期化を行います						  */
 /* 引数			：void		: 無し											  */
 /* 戻り値		：void		: 無し											  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msDCInit(void)
+void msServoInit(void)
 {
-	SLNG dcCounter = 0;
-	for (dcCounter = 0; dcCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); dcCounter++) {
-		msDCInitRecord(&g_Mng[dcCounter]);
+	SLNG slCounter = 0;
+	for (slCounter = 0; slCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); slCounter++) {
+		msServoInitRecord(&g_Mng[slCounter]);
 	}
 	return;
 }
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCInitRecord											  */
-/* 機能名		：DCモータの初期化処理(１レコード)							  */
+/* 関数名		：msServoInitRecord											  */
+/* 機能名		：サーボモータの初期化処理(１レコード)						  */
 /* 機能概要		：															  */
 /* 引数			：void		: 無し											  */
 /* 戻り値		：void		: 無し											  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msDCInitRecord(DC_MNG* mng)
+void msServoInitRecord(SERVO_MNG* mng)
 {
 	if (mng == NULL) {
 		msLog("これもう無理やで");
 		return;
 	}
 	/* １レコード初期化 */
-	mng->dcid = 0;
+	mng->servoid = 0;
 	mng->timerid = 0;
-	mng->busyflg = MS_DC_READY;
+	mng->busyflg = MS_SERVO_READY;
 	mng->oldangles = 0;
 	return;
 }
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCGetBusy											  */
-/* 機能名		：DCビジー状態取得										  */
-/* 機能概要		：現在のDCモーターが動作中か否かを返却します。			  */
-/*				：本開発でのDCは4個固定なので、引数データも4個用意する事	*/
-/* 引数			：UCHR*		: busyflags	 ：[OUT] フラグ配列(4個のみ動作)	  */
+/* 関数名		：msServoGetBusy											  */
+/* 機能名		：サーボビジー状態取得										  */
+/* 機能概要		：現在のサーボモーターが動作中か否かを返却します。			  */
+/*				：本開発でのサーボは18個固定なので、引数データも18個用意する事*/
+/* 引数			：UCHR*		: busyflags	 ：[OUT] フラグ配列(18個のみ動作)	  */
 /*				：USHT		: max		 ：[I N] 第一引数の配列数			  */
-/* 戻り値		：SLNG		: MS_DC_OK	：正常終了						  */
-/*				：			: MS_DC_PARAM：引数異常						  */
+/* 戻り値		：SLNG		: MS_SERVO_OK	：正常終了						  */
+/*				：			: MS_SERVO_PARAM：引数異常						  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-SLNG msDCGetBusy(UCHR* busyflags, USHT max)
+SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 {
-	SLNG dcIndex = 0;
+	SLNG slIndex = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((busyflags == NULL) || (max != MS_DC_MAX)) {
+	if ((busyflags == NULL) || (max != MS_SERVO_MAX)) {
 		msLog("引数エラー");
-		return MS_DC_PARAM;
+		return MS_SERVO_PARAM;
 	}
 
 	/* ビジーデータコピーして返却 */
-	for (dcIndex = 0; dcIndex < MS_DC_MAX; dcIndex++) {
-		busyflags[dcIndex] = g_Mng[dcIndex].busyflg;
+	for (slIndex = 0; slIndex < MS_SERVO_MAX; slIndex++) {
+		busyflags[slIndex] = g_Mng[slIndex].busyflg;
 	}
-	return MS_DC_OK;
+	return MS_SERVO_OK;
 }
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCGetSet												  */
-/* 機能名		：DC角度設定												  */
-/* 機能概要		：DCモーターの角度設定を行います。							  */
+/* 関数名		：msServoGetSet												  */
+/* 機能名		：サーボ角度設定											  */
+/* 機能概要		：サーボモーターの角度設定を行います。						  */
 /*	##			：１度角度を移動するのに〇〇秒要すると定義し、現在の角度に対し*/
 /*				：相対移動量×〇〇秒でタイマーをセットし、管理する。		  */
 /*				：busyフラグが立っている所は設定せず、それ以外のみ設定する。  */
 /*				：事前に必ず仕様を良く理解して使う事。						  */
-/* 引数			：SLNG*		: returns	 ：[OUT] 各DCの設定が完了可否		  */
-/*				：			:			 ： MS_DC_OK    :設定成功		  */
-/*				：			:			 ： MS_DC_BUSY  :ビジーの為失敗    */
-/*				：			:			 ： MS_DC_PARAM :角度がおかしい    */
-/*				：SSHT*		: angles	 ：[I N] 各DCの設定角度			  */
-/*				：			:			 ：何もしない場合はMS_DC_NOSET	  */
+/* 引数			：SLNG*		: returns	 ：[OUT] 各サーボの設定が完了可否	  */
+/*				：			:			 ： MS_SERVO_OK    :設定成功		  */
+/*				：			:			 ： MS_SERVO_BUSY  :ビジーの為失敗    */
+/*				：			:			 ： MS_SERVO_PARAM :角度がおかしい    */
+/*				：SSHT*		: angles	 ：[I N] 各サーボの設定角度			  */
+/*				：			:			 ：何もしない場合はMS_SERVO_NOSET	  */
 /*				：USHT		: max		 ：[I N] 第一・第二引数の配列数(18個) */
-/* 戻り値		：SLNG		: MS_DC_OK	：正常終了						  */
-/*				：			: MS_DC_PARAM：引数異常						  */
+/* 戻り値		：SLNG		: MS_SERVO_OK	：正常終了						  */
+/*				：			: MS_SERVO_PARAM：引数異常						  */
 /* ■■注意■■ ：正常終了を返しても、第一引数のreturnsはエラーの場合がある為 */
 /*				：必ずチェックする事！										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
+SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max)
 {
-	SLNG dcCounter = 0;
-	SLNG dcRet = MS_DC_OK;
-	UINT_8t dcAng = 0;
+	SLNG slCounter = 0;
+	SLNG slRet = MS_SERVO_OK;
+	UINT_8t slAng = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((returns == NULL) || (angles == NULL) || (max != MS_DC_MAX)) {
+	if ((returns == NULL) || (angles == NULL) || (max != MS_SERVO_MAX)) {
 		msLog("引数エラー");
-		return MS_DC_PARAM;
+		return MS_SERVO_PARAM;
 	}
 
-	/* DCの個数分ループして各種設定 */
-	for (dcCounter == 0; dcCounter < MS_DC_MAX; dcCounter++) {
-		/* DCがビジー時は上位層の設定ミス */
-		if (g_Mng[dcCounter].busyflg == MS_DC_BUSY) {
-			returns[dcCounter] = MS_DC_BUSY;
+	/* サーボの個数分ループして各種設定 */
+	for (slCounter == 0; slCounter < MS_SERVO_MAX; slCounter++) {
+		/* サーボがビジー時は上位層の設定ミス */
+		if (g_Mng[slCounter].busyflg == MS_SERVO_BUSY) {
+			returns[slCounter] = MS_SERVO_BUSY;
 			continue;
 		}
-		/* ##要確認：DCの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[dcCounter] < MS_DC_ANG_MIN) || ((angles[dcCounter] > MS_DC_ANG_MAX) && (angles[dcCounter] != MS_DC_NOSET))) {
-			returns[dcCounter] = MS_DC_PARAM;
+		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
+		if ((angles[slCounter] < 0) || ((angles[slCounter] > 270) && (angles[slCounter] != MS_SERVO_NOSET))) {
+			returns[slCounter] = MS_SERVO_PARAM;
 			continue;
 		}
 
-		/* DCモーター設定可能と判断 --------------------------------------*/
-		/* 指定角度からDC移動に必要な時間を算出 */
-		SSHT dTmpAngle = 0;
-		bool dcUD = false;						/* 回転方向を判断する				 */
-												/* 初期は逆転(マイナス方向)			 */
-		dTmpAngle = g_Mng[dcCounter].oldangles - angles[dcCounter];
+		/* サーボモーター設定可能と判断 --------------------------------------*/
+		/* 指定角度からサーボ移動に必要な時間を算出 */
+		SSHT sTmpAngle = 0;
+		sTmpAngle = g_Mng[slCounter].oldangles - angles[slCounter];
 		/* マイナス角度をプラスに補正 */
-		if (dTmpAngle < 0) {
-			dTmpAngle = dTmpAngle * -1;
-			dcUD = true;						/* 正転に変更					 */
+		if (sTmpAngle < 0) {
+			sTmpAngle = sTmpAngle * -1;
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
-		dTmpAngle = dTmpAngle * MS_DC_MOVETIME;
+		sTmpAngle = sTmpAngle * MS_SERVO_MOVETIME;
 
 		/* タイマー計算＆コールバック設定 */
-		dcRet = msSetTimer(dTmpAngle, &g_Mng[dcCounter], msDCTimerCallback);
-		if ((dcRet == MS_TIME_FULL) || (dcRet == MS_TIME_PARAM)) {
-			msLog("タイマー関連エラー: %d", dcRet);
-			return MS_DC_NG;
+		slRet = msSetTimer(sTmpAngle, &g_Mng[slCounter], msServoTimerCallback);
+		if ((slRet == MS_TIME_FULL) || (slRet == MS_TIME_PARAM)) {
+			msLog("タイマー関連エラー: %d", slRet);
+			return MS_SERVO_NG;
 		}
 		/* タイマーIDを保管 */
-		g_Mng[dcCounter].timerid = dcRet;
+		g_Mng[slCounter].timerid = slRet;
 
 		/* 指定角度を古くしておく */
-		g_Mng[dcCounter].oldangles = angles[dcCounter];
+		g_Mng[slCounter].oldangles = angles[slCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
-		/* 現在角度の取得 */
-		//UINT dcNowAng = getAngle
 
-		/* 目標角度の比較 到達してたらifに入る */
-		if(dcUD == false? (dcNowAng < g_Mng[dcCounter].oldangles) : (dcNowAng > g_Mng[dcCounter].oldangles)){
-			/* PWMを止める */
-			set
-		}
+		/* 角度（0～180）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
+		slAng = map(g_Mng[slCounter].oldangles, 0, 270, SERVOMIN, SERVOMAX);
 
-		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
-		dcAng = map(g_Mng[dcCounter].oldangles, 0, 270, DCMIN, DCMAX);
-
-		if(dcCounter < (MS_DC_MAX / 2) ){
-  			pwm.setPWM(dcCounter, 0, dcAng);
+		if(slCounter < (MS_SERVO_MAX / 2) ){
+  			pwm.setPWM(slCounter, 0, slAng);
 		}else{
-  			pwm2.setPWM(dcCounter - (MS_DC_MAX / 2), 0, dcAng);
+  			pwm2.setPWM(slCounter - (MS_SERVO_MAX / 2), 0, slAng);
 		}
 		/* 必要ならディレイ */
   		// delay(1);
 	}
-	return MS_DC_OK;
+	return MS_SERVO_OK;
 }
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCTimerCallback										  */
+/* 関数名		：msServoTimerCallback										  */
 /* 機能名		：サーボモータが指定角度まで動いた（はず）					  */
 /* 機能概要		：モーターのbusy状態を解除します。							  */
 /* 				：優先度を付ける必要がある場合は、ここでソート処理を行うこと。*/
@@ -212,9 +206,9 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 /* 戻り値		：void			 ：無し										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msDCTimerCallback(void* addr)
+void msServoTimerCallback(void* addr)
 {
-	DC_MNG* ptr = (DC_MNG*)addr;
+	SERVO_MNG* ptr = (SERVO_MNG*)addr;
 	SSHT tmpAngle = 0;
 	/* 該当のタイマーカット */
 	msTimeKill(ptr->timerid);
@@ -223,7 +217,7 @@ void msDCTimerCallback(void* addr)
 	tmpAngle = ptr->oldangles;
 
 	/* 設定情報クリア(Ready状態に戻す) */
-	msDCInitRecord(ptr);
+	msServoInitRecord(ptr);
 
 	/* 角度情報を戻す */
 	ptr->oldangles = tmpAngle;
@@ -232,14 +226,14 @@ void msDCTimerCallback(void* addr)
 }
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCInterrupt											  */
+/* 関数名		：msServoInterrupt											  */
 /* 機能名		：##Aruduinoから来る割り込み通知							  */
 /* 機能概要		：デューティー比の変更を行う								  */
 /* 引数			：void			 ：無し										  */
 /* 戻り値		：void			 ：無し										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msDCInterrupt(void)
+void msServoInterrupt(void)
 {
 	/* 関数名は仮なので事由にどうぞ */
 	/* ここで必要ならデューティ比を変更する */

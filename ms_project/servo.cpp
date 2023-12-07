@@ -183,7 +183,7 @@ SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max)
 
 		/* ##サーボモーターのレジスタ設定 */
 
-		/* 角度（0～180）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
+		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
 		slAng = map(g_Mng[slCounter].oldangles, 0, 270, SERVOMIN, SERVOMAX);
 
 		if(slCounter < (MS_SERVO_MAX / 2) ){

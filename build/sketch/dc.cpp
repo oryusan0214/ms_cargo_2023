@@ -1,3 +1,4 @@
+#line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\dc.cpp"
 /* -------------------------------------------------------------------------- */
 /* dc.cpp																  */
 /* DCモーター制御に関わる処理												  */
@@ -148,28 +149,25 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			returns[dcCounter] = MS_DC_BUSY;
 			continue;
 		}
-		/* ##要確認：DCの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[dcCounter] < MS_DC_ANG_MIN) || ((angles[dcCounter] > MS_DC_ANG_MAX) && (angles[dcCounter] != MS_DC_NOSET))) {
+		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
+		if ((angles[dcCounter] < 0) || ((angles[dcCounter] > 270) && (angles[dcCounter] != MS_DC_NOSET))) {
 			returns[dcCounter] = MS_DC_PARAM;
 			continue;
 		}
 
-		/* DCモーター設定可能と判断 --------------------------------------*/
-		/* 指定角度からDC移動に必要な時間を算出 */
-		SSHT dTmpAngle = 0;
-		bool dcUD = false;						/* 回転方向を判断する				 */
-												/* 初期は逆転(マイナス方向)			 */
-		dTmpAngle = g_Mng[dcCounter].oldangles - angles[dcCounter];
+		/* サーボモーター設定可能と判断 --------------------------------------*/
+		/* 指定角度からサーボ移動に必要な時間を算出 */
+		SSHT sTmpAngle = 0;
+		sTmpAngle = g_Mng[dcCounter].oldangles - angles[dcCounter];
 		/* マイナス角度をプラスに補正 */
-		if (dTmpAngle < 0) {
-			dTmpAngle = dTmpAngle * -1;
-			dcUD = true;						/* 正転に変更					 */
+		if (sTmpAngle < 0) {
+			sTmpAngle = sTmpAngle * -1;
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
-		dTmpAngle = dTmpAngle * MS_DC_MOVETIME;
+		sTmpAngle = sTmpAngle * MS_DC_MOVETIME;
 
 		/* タイマー計算＆コールバック設定 */
-		dcRet = msSetTimer(dTmpAngle, &g_Mng[dcCounter], msDCTimerCallback);
+		dcRet = msSetTimer(sTmpAngle, &g_Mng[dcCounter], msDCTimerCallback);
 		if ((dcRet == MS_TIME_FULL) || (dcRet == MS_TIME_PARAM)) {
 			msLog("タイマー関連エラー: %d", dcRet);
 			return MS_DC_NG;
@@ -181,16 +179,8 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		g_Mng[dcCounter].oldangles = angles[dcCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
-		/* 現在角度の取得 */
-		//UINT dcNowAng = getAngle
 
-		/* 目標角度の比較 到達してたらifに入る */
-		if(dcUD == false? (dcNowAng < g_Mng[dcCounter].oldangles) : (dcNowAng > g_Mng[dcCounter].oldangles)){
-			/* PWMを止める */
-			set
-		}
-
-		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
+		/* 角度（0～180）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
 		dcAng = map(g_Mng[dcCounter].oldangles, 0, 270, DCMIN, DCMAX);
 
 		if(dcCounter < (MS_DC_MAX / 2) ){
