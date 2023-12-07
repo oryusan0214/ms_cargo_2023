@@ -14,6 +14,7 @@
 /* includeファイル															  														*/
 /* -------------------------------------------------------------------------- */
 #pragma once
+#include "common.h"
 #include <Arduino.h>
 #include <SPI.h>
 #include <stdint.h>
@@ -64,7 +65,7 @@ struct spi_data
   UCHR  elevator;
   UCHR  hund; 
   
-};
+}typedef spi_data;
 
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														                              */

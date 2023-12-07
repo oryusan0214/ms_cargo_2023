@@ -16,10 +16,12 @@
 /* -------------------------------------------------------------------------- */
 #pragma once
 #include "common.h"
-#include "time.h"
 #include "log.h"
 #include <Arduino.h>
 #include <TimerOne.h>
+#include <stdio.h>								/* 基本的なＩ／Ｏ情報		  */
+#include <string.h>								/* 初期化関連				      */
+#include <stdarg.h>								/* システムログ				    */
 
 /* -------------------------------------------------------------------------- */
 /* define定義															  														      */
@@ -52,7 +54,6 @@ void msTimeExit( SLNG );
 SLNG msTimeKill( SLNG );
 ULNG msTimeGetSystemTime( void );
 void msTimeCallbackExecute( void );
-void msTimeInit( void );
 SLNG msSetTimer( ULNG CallBackTime, void* Object, void (*Callback)(void* objectt ));
 
 //unsigned long intにしないとオーバーフローする

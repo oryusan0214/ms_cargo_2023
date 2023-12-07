@@ -24,6 +24,11 @@
 //short=2byte
 //long=4byte
 
+#line 25 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+void setup();
+#line 31 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+void loop();
+#line 25 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup()
 {
 	

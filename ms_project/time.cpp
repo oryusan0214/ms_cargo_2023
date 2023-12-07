@@ -24,18 +24,14 @@
 /* -------------------------------------------------------------------------- */
 /* includeファイル															                              */
 /* -------------------------------------------------------------------------- */
-#pragma once
-#include <stdio.h>								/* 基本的なＩ／Ｏ情報		  */
-#include <string.h>								/* 初期化関連				      */
-#include <stdarg.h>								/* システムログ				    */
-#include "Time.h"								  /* 時間に関するヘッダ		  */
-#include "Log.h"								  /* ログに関わるヘッダ		  */
+
+#include "time.h"								  /* 時間に関するヘッダ		  */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															                              */
 /* -------------------------------------------------------------------------- */
 /* ## タイマーコールバック関数→Aruduinoの1msタイマ割り込みに変更			       */
-void CALLBACK msTimerCallback( );
+void  msTimerCallback();
 
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
@@ -135,7 +131,7 @@ void msTimeInit( void )
 void msTimeExit( void )
 {
 	/* ##Aruduinoでタイマー割り込みのセットを解除すればOK */
-  Timer1.stop();
+  	Timer1.stop();
 	/* 電源入れっぱなしであれば本関数はコール不要。 */
 	//KillTimer( NULL, g_WinTimerID );
 	return;
@@ -198,7 +194,7 @@ ULNG msTimeGetSystemTime( void )
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					                    */
 /* -------------------------------------------------------------------------- */
 /* ##Aruduinoのタイマ割り込み関数に変更、ロジック変更は不要 */
-void CALLBACK msTimerCallback( )
+void msTimerCallback( )
 {
 	ULNG ulCounter             = 0;				  /* ループカウンタ			        */
 	MS_TIMER_CALLBACK_TBL* ptr = NULL;			/* コールバックテーブル検索用 */
@@ -240,7 +236,7 @@ void msTimeCallbackExecute( void )
 			/* 上記且つタイマーが満了しているか */
 			if( ptr->TimerCounter >= ptr->CallbackTime ) {
 				/* コールバック関数呼び出し */
-				(*ptr->Callback)(object);
+				ptr->Callback( ptr->object );
 				ptr->TimerCounter = 0;
 			}
 		}

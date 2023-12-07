@@ -6,10 +6,10 @@ void init_spi(){
   SCHR datacount = 0;
   SCHR sender;
 
-  spi.setBitOrder(MSBFIRST);
-  spi.setDataMode(SPI_MODE2);
-  spi.setClockDivider(SPI_CLOCK_DIV2);
-  spi.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE2);
+  SPI.setClockDivider(SPI_CLOCK_DIV2);
+  SPI.begin();
   digitalWrite(55, LOW);
   *(float*)senddata[0]=data.xangle;
   *(float*)senddata[4]=data.yangle;
@@ -40,19 +40,20 @@ void init_spi(){
     if (datacount<=32)
     {
       sender=senddata[datacount];
-      catchdata[datacount]=spi.transfer(sender);
+      catchdata[datacount]=SPI.transfer(sender);
     }
     else
     {
       sender=0x00;
-      catchdata[datacount]=spi.transfer(sender);
+      catchdata[datacount]=SPI.transfer(sender);
     }
     
   }
-  data.xangle=*(float*)catchdata[0];
-  data.yangle=*(float*)catchdata[4];
-  data.zangle=*(float*)catchdata[8];
-  data.weight=*(uint16_t*)catchdata[12];
+
+  data.xangle=*(const float*)catchdata[0];
+  data.yangle=*(const float*)catchdata[4];
+  data.zangle=*(const float*)catchdata[8];
+  data.weight=*(const uint16_t*)catchdata[12];
   data.error=*(UCHR*)catchdata[14];
   data.lf_neemotor=*(UCHR*)catchdata[15];
   data.lf_yaw_hipjointmotor=*(UCHR*)catchdata[16];

@@ -149,25 +149,28 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			returns[dcCounter] = MS_DC_BUSY;
 			continue;
 		}
-		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[dcCounter] < 0) || ((angles[dcCounter] > 270) && (angles[dcCounter] != MS_DC_NOSET))) {
+		/* ##要確認：DCの角度範囲がおかしい場合はパラメータエラー */
+		if ((angles[dcCounter] < MS_DC_ANG_MIN) || ((angles[dcCounter] > MS_DC_ANG_MAX) && (angles[dcCounter] != MS_DC_NOSET))) {
 			returns[dcCounter] = MS_DC_PARAM;
 			continue;
 		}
 
-		/* サーボモーター設定可能と判断 --------------------------------------*/
-		/* 指定角度からサーボ移動に必要な時間を算出 */
-		SSHT sTmpAngle = 0;
-		sTmpAngle = g_Mng[dcCounter].oldangles - angles[dcCounter];
+		/* DCモーター設定可能と判断 --------------------------------------*/
+		/* 指定角度からDC移動に必要な時間を算出 */
+		SSHT dTmpAngle = 0;
+		bool dcUD = false;						/* 回転方向を判断する				 */
+												/* 初期は逆転(マイナス方向)			 */
+		dTmpAngle = g_Mng[dcCounter].oldangles - angles[dcCounter];
 		/* マイナス角度をプラスに補正 */
-		if (sTmpAngle < 0) {
-			sTmpAngle = sTmpAngle * -1;
+		if (dTmpAngle < 0) {
+			dTmpAngle = dTmpAngle * -1;
+			dcUD = true;						/* 正転に変更					 */
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
-		sTmpAngle = sTmpAngle * MS_DC_MOVETIME;
+		dTmpAngle = dTmpAngle * MS_DC_MOVETIME;
 
 		/* タイマー計算＆コールバック設定 */
-		dcRet = msSetTimer(sTmpAngle, &g_Mng[dcCounter], msDCTimerCallback);
+		dcRet = msSetTimer(dTmpAngle, &g_Mng[dcCounter], msDCTimerCallback);
 		if ((dcRet == MS_TIME_FULL) || (dcRet == MS_TIME_PARAM)) {
 			msLog("タイマー関連エラー: %d", dcRet);
 			return MS_DC_NG;
@@ -179,17 +182,79 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		g_Mng[dcCounter].oldangles = angles[dcCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
+		switch(dcCounter){
+		case MS_DC_L :
+			/* 現在角度の取得 */
+			//UINT dcNowAng = getAngle
 
-		/* 角度（0～180）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
-		dcAng = map(g_Mng[dcCounter].oldangles, 0, 270, DCMIN, DCMAX);
+			/* 目標角度の比較 到達してたらifに入る */
+			if(dcUD == false? (dcNowAng < g_Mng[dcCounter].oldangles) : (dcNowAng > g_Mng[dcCounter].oldangles)){
+				/* PWMを止める */
+				analogWrite(MS_DC_L_PIN, 0);
+			}else if(dcUD == true) {
+				analogWrite(MS_DC_L_PIN, MS_DC_SPEED);
+			}else{
+				analogWrite(MS_DC_L_PIN, -MS_DC_SPEED);
+			}
+			/* 必要ならディレイ */
+  			// delay(1);
+			break;
 
-		if(dcCounter < (MS_DC_MAX / 2) ){
-  			pwm.setPWM(dcCounter, 0, dcAng);
-		}else{
-  			pwm2.setPWM(dcCounter - (MS_DC_MAX / 2), 0, dcAng);
+		case MS_DC_R :
+			/* 現在角度の取得 */
+			//UINT dcNowAng = getAngle
+
+			/* 目標角度の比較 到達してたらifに入る */
+			if(dcUD == false? (dcNowAng < g_Mng[dcCounter].oldangles) : (dcNowAng > g_Mng[dcCounter].oldangles)){
+				/* PWMを止める */
+				analogWrite(MS_DC_R_PIN, 0);
+			}else if(dcUD == true) {
+				analogWrite(MS_DC_R_PIN, MS_DC_SPEED);
+			}else{
+				analogWrite(MS_DC_R_PIN, -MS_DC_SPEED);
+			}
+			/* 必要ならディレイ */
+  			// delay(1);
+			break:
+
+		case MS_DC_ROD :
+			/* 現在距離の取得 */
+			//UINT dcNowDis = getDistance
+
+			/* 目標距離の比較 到達してたらifに入る */
+			if(dcNowDis == g_Mng[dcCounter].oldangles){
+				/* PWMを止める */
+				analogWrite(MS_DC_ROD_PIN, 0);
+			}else if(dcUD == true) {
+				analogWrite(MS_DC_ROD_PIN, MS_DC_SPEED);
+			}else{
+				analogWrite(MS_DC_ROD_PIN, -MS_DC_SPEED);
+			}
+			/* 必要ならディレイ */
+  			// delay(1);
+			break;
+
+		case MS_DC_HAND :
+			/* 現在時間の取得 */
+			//UINT dcNowTime = getTime
+
+			/* 目標時間の比較 到達してたらifに入る */
+			if(dcNowTime > MS_DC_LIMIT_TIME){
+				/* PWMを止める */
+				analogWrite(MS_DC_HAND_PIN, 0);
+			}else if(dcUD == true) {
+				analogWrite(MS_DC_HAND_PIN, MS_DC_SPEED);
+			}else{
+				analogWrite(MS_DC_HAND_PIN, -MS_DC_SPEED);
+			}
+			/* 必要ならディレイ */
+  			// delay(1);
+			break;
+
+		default:
+			printf("おかしい\n");
+			break;
 		}
-		/* 必要ならディレイ */
-  		// delay(1);
 	}
 	return MS_DC_OK;
 }
@@ -222,18 +287,36 @@ void msDCTimerCallback(void* addr)
 }
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCInterrupt											  */
-/* 機能名		：##Aruduinoから来る割り込み通知							  */
-/* 機能概要		：デューティー比の変更を行う								  */
+/* 関数名		：msDCInterrupt_hl											  */
+/* 機能名		：##Aruduinoから来る割り込み通知 対応ピンがハイからロウに		  */
+/* 機能概要		：エンコーダのピンを読みその値を基に角度をインクリメントする	  */
+/* 引数			：void			 ：無し										  */
+/* 戻り値		：void			 ：無し										  */
+/* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
+/* -------------------------------------------------------------------------- */
+void msDCInterrupt_hl(void)
+{
+	bool msEncordRet = analogRead(pin);
+
+	if(msEncordRet == true){
+		//setAng(++);
+	}
+}
+/** -------------------------------------------------------------------------- */
+/* 関数名		：msDCInterrupt_lh											  */
+/* 機能名		：##Aruduinoから来る割り込み通知 対応ピンがロウからハイに		  */
+/* 機能概要		：エンコーダのピンを読みその値を基に角度をでクリメントする	  */
 /* 引数			：void			 ：無し										  */
 /* 戻り値		：void			 ：無し										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
 void msDCInterrupt(void)
 {
-	/* 関数名は仮なので事由にどうぞ */
-	/* ここで必要ならデューティ比を変更する */
-	/* モータードライバが全部自動てやってくれたら最高なんだけどな・・ */
+	bool msEncordRet = analogRead(pin);
+
+	if(msEncordRet == false){
+		//setAng(--);
+	}
 }
 
 

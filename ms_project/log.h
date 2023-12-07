@@ -15,6 +15,7 @@
 #pragma once
 #include "common.h"
 #include <stdio.h>								/* 基本的なＩ／Ｏ情報		  */
+#include <Arduino.h>
 
 /* -------------------------------------------------------------------------- */
 /* define定義																	                                */
@@ -30,12 +31,12 @@
 /* ログ格納構造体 */
 typedef struct _MS_LOGMNG { 
 	ULNG   TimeStamp;							/* システム経過時間			  */
-	UCHR   LogLevel;							/* ログレベル格納			  */
+	UCHR   LogLevel;							/* ログレベル格納			  	*/
 	UCHR   LogStr[MS_LOG_RINGBUF_STR_BUF];
 } MS_LOGMNG;
 
 /* -------------------------------------------------------------------------- */
-/* プロトタイプ宣言															  */
+/* プロトタイプ宣言															  														*/
 /* -------------------------------------------------------------------------- */
 void msLog( const char* Message, ... );
 void msLogInit( void );
