@@ -20,6 +20,8 @@
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "hand.h"									/* HANDに関わるヘッダ		  */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言(ローカル)												  */
@@ -39,6 +41,7 @@ typedef struct {
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
 HAND_MNG g_Mng;									/* HAND管理データ				  */
+PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msHANDInit												  */
@@ -148,6 +151,7 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 											/* 初期は逆転(マイナス方向)			 */
 
     /* 開閉方向判断 */
+	/* 同じ→変化なし(1)、Low → High 開く(1)、High → Low 閉じる(2) */
     if(g_Mng.oldangles == setting){
         handUD = 0;
     }elseif(g_Mng.oldstate < setting){
@@ -168,17 +172,50 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 	g_Mng.oldangles = setting;
 
 	/* ##HANDモーターのレジスタ設定 */
-	if(handUD == 0) {
-		analogWrite(MS_HAND_PIN, 0);
+	if(handUD == 0) {//
+		dcPwm.setPWM(MS_HAND_PIN, 0, 0);
 	}else if(handUD == 1){
-		analogWrite(MS_HAND_PIN, MS_HAND_SPEED);
+		digitalWrite(MS_HAND_DIR_PIN,HIGH);
+		dcPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
 	}else{
-        analogWrite(MS_HAND_PIN, -MS_HAND_SPEED);
+        digitalWrite(MS_HAND_DIR_PIN,LOW);
+		dcPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
     }
 	/* 必要ならディレイ */
   	// delay(1);
 	
 	return MS_HAND_OK;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 関数名		：msHANDTimerCallback										  */
+/* 機能名		：サーボモータが指定角度まで動いた（はず）					  */
+/* 機能概要		：モーターのbusy状態を解除します。							  */
+/* 				：優先度を付ける必要がある場合は、ここでソート処理を行うこと。*/
+/* 引数			：void			 ：無し										  */
+/* 戻り値		：void			 ：無し										  */
+/* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
+/* -------------------------------------------------------------------------- */
+void msHANDTimerCallback(void* addr)
+{
+	HAND_MNG* ptr = (HAND_MNG*)addr;
+	SSHT tmpDistance = 0;
+	/* 該当のタイマーカット */
+	msTimeKill(ptr->timerid);
+
+	/* モータの停止 */
+	dcPwm.setPWM(MS_HAND_PIN, 0, 0);
+
+	/* 角度情報を逃がす */
+	tmpDistance = ptr->olddistance;
+
+	/* 設定情報クリア(Ready状態に戻す) */
+	msRODInitRecord(ptr);
+
+	/* 角度情報を戻す */
+	ptr->olddistance = tmpDistance;
+
+	return;
 }
 /* -------------------------------------------------------------------------- */
 /* 				Copyright HAL College of Technology & Design				  */

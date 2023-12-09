@@ -27,6 +27,9 @@
 #define SERVOMIN 150                            /* 最小パルス幅              */
 #define SERVOMAX 600                            /* 最大パルス幅              */
 
+#define MS_SERVO_DST_MIN          0             /* サーボモータの最大距離      */
+#define MS_SERVO_DST_MAX        270             /* サーボモータの最小角距離     */
+
 /* ##1度の移動時間は目検で調べるしかない */
 #define MS_SERVO_MOVETIME     (   10 )			/* サーボ１度移動に必要な時間(ms) */
 

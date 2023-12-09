@@ -42,8 +42,8 @@ typedef struct {
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
 SERVO_MNG g_Mng[MS_SERVO_MAX];					/* サーボ管理データ			  */
-PCA9685 pwm = PCA9685(0x40);    				/* 一つ目のアドレス			 */
-PCA9685 pwm2 = PCA9685(0x41);   				/* 二つ目のアドレス			 */
+PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
+PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msServoInit												  */
@@ -135,9 +135,9 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 /* -------------------------------------------------------------------------- */
 SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max)
 {
-	SLNG slCounter = 0;
-	SLNG slRet = MS_SERVO_OK;
-	UINT_8t slAng = 0;
+	SLNG slCounter	= 0;
+	SLNG slRet		= MS_SERVO_OK;
+	UINT_8t slAng	= 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != MS_SERVO_MAX)) {
@@ -153,7 +153,7 @@ SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max)
 			continue;
 		}
 		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[slCounter] < 0) || ((angles[slCounter] > 270) && (angles[slCounter] != MS_SERVO_NOSET))) {
+		if ((angles[slCounter] < MS_SERVO_DST_MIN) || ((angles[slCounter] > MS_SERVO_DST_MAX) && (angles[slCounter] != MS_SERVO_NOSET))) {
 			returns[slCounter] = MS_SERVO_PARAM;
 			continue;
 		}
@@ -184,12 +184,12 @@ SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max)
 		/* ##サーボモーターのレジスタ設定 */
 
 		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
-		slAng = map(g_Mng[slCounter].oldangles, 0, 270, SERVOMIN, SERVOMAX);
+		slAng = map(g_Mng[slCounter].oldangles, MS_SERVO_DST_MIN, MS_SERVO_DST_MAX, SERVOMIN, SERVOMAX);
 
 		if(slCounter < (MS_SERVO_MAX / 2) ){
-  			pwm.setPWM(slCounter, 0, slAng);
+  			leftPwm.setPWM(slCounter, 0, slAng);
 		}else{
-  			pwm2.setPWM(slCounter - (MS_SERVO_MAX / 2), 0, slAng);
+  			rightPwm.setPWM(slCounter - (MS_SERVO_MAX / 2), 0, slAng);
 		}
 		/* 必要ならディレイ */
   		// delay(1);

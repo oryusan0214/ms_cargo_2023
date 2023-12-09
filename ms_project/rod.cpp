@@ -20,6 +20,8 @@
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "rod.h"									/* RODに関わるヘッダ		  */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言(ローカル)												  */
@@ -42,6 +44,8 @@ typedef struct {
 ROD_MNG g_Mng;									/* ROD管理データ				  */
 SINT	RODAngle;								/*  */
 SINT	RODCount;
+PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
+
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msRODInit												  */
@@ -180,9 +184,11 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 
 	/* ##サーボモーターのレジスタ設定 */
 	if(rodUD == true) {
-		analogWrite(MS_ROD_PIN, MS_ROD_SPEED);
+		digitalWrite(MS_ROD_DIR_PIN,HIGH);
+		dcPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
 	}else{
-		analogWrite(MS_ROD_PIN, -MS_ROD_SPEED);
+		digitalWrite(MS_ROD_DIR_PIN,LOW);
+		dcPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
 	}
 	/* 必要ならディレイ */
   	// delay(1);
@@ -205,11 +211,7 @@ void msRODTimerCallback(void* addr)
 	/* 該当のタイマーカット */
 	msTimeKill(ptr->timerid);
 
-	if(ptr->rodid == MS_ROD){
-		analogWrite(MS_ROD_PIN, 0);
-	}else{
-		analogWrite(MS_ROD_PIN, 0);
-	}
+	dcPwm.setPWM(MS_ROD_PIN, 0, 0);
 
 	/* 角度情報を逃がす */
 	tmpDistance = ptr->olddistance;
