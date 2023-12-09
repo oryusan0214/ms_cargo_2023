@@ -18,6 +18,22 @@
 
 
 int main(){
+  UCHR legbusy[18]={0};
+  UCHR armbusy[2]={0};
+  uint16_t gyro_data[6]={0,0,0,0,0,0};
+
+  /*受信データを取得*/
+  
+  /*busy信号検出*/
+  msServoGetBusy(legbusy,sizeof(legbusy)/sizeof(legbusy[0]));
+  msDCGetBusy(armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
+
+  /*ジャイロデータ取得*/
+  gyro_get(gyro_get);
+
+  /*送信データを作成*/
+
+
   return 0;
 }
 

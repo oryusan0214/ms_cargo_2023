@@ -30,12 +30,12 @@
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															                              */
 /* -------------------------------------------------------------------------- */
-void init_spi(void);
+void spi(void);
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義                                                                 */
 /* -------------------------------------------------------------------------- */
-struct send_data
+typedef struct send_data
 {
   float xangle;
   float yangle;
@@ -65,9 +65,9 @@ struct send_data
   UCHR  elevator;
   UCHR  hund; 
   
-}typedef send_data;
+} send_data;
 
-struct catch_data
+typedef struct catch_data
 {
   uint16_t  lf_neemotor;
   uint16_t  lf_yaw_hipjointmotor;
@@ -90,13 +90,9 @@ struct catch_data
   uint16_t  l_armmotor;
   uint16_t  r_armmotor;
   uint16_t  elevator;
-  CHAR  error;
-  CHAR  hundopen;
-  CHAR  calibration;
-}typedef catch_data;
+  UCHR  error;
+  UCHR  hundopen;
+  UCHR  calibration;
+}catch_data;
 
-/* -------------------------------------------------------------------------- */
-/* グローバル変数宣言														                              */
-/* -------------------------------------------------------------------------- */
-send_data senderdata;
-catch_data catcherdata;
+

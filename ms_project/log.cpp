@@ -116,6 +116,8 @@ void msLog( const char* Message, ... )
 	
 	/* システム時間取得 ----------------------------------------------------- */
 	ulSystemTime = msTimeGetSystemTime( );
+	/* msTimeGetSystemTime()で割り込み禁止しているので、ここで許可する */
+	interrupts();
 	
 	/* 可変長引数変換取得 --------------------------------------------------- */
 	memset( scStr, 0, sizeof( scStr ));

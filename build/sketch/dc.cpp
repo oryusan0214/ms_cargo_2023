@@ -2,7 +2,7 @@
 /* -------------------------------------------------------------------------- */
 /* dc.cpp																  */
 /* DCモーター制御に関わる処理												  */
-/* 出力系はサーボと同じ処理方法で対応すると良い								  */
+/* 出力系はDCと同じ処理方法で対応すると良い								  */
 /* -------------------------------------------------------------------------- */
 /* 番号		更新履歴								日付		氏名		  */
 /* -------------------------------------------------------------------------- */
@@ -20,20 +20,22 @@
 #include <stdlib.h>								/* メモリ操作				  */
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
-#include "dc.h"								/* サーボに関わるヘッダ		  */
+#include "dc.h"									/* DCに関わるヘッダ		  */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言(ローカル)												  */
 /* -------------------------------------------------------------------------- */
-void msDCInitRecord(DC_MNG* mng);
+void msDCInitRecord(DC_MNG* mng,SLNG id);
+void msLDCInterrupt();
+void msRDCInterrupt();
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
 /* -------------------------------------------------------------------------- */
 typedef struct {
-	SLNG dcid;									/* サーボモータ番号			  */
+	SLNG dcid;									/* DCモータ番号				  */
 	SLNG timerid;								/* タイマーID				  */
-	UCHR busyflg;								/* ビジーフラグ(サーボ個数分) */
+	UCHR busyflg;								/* ビジーフラグ(DC個数分)	 */
 	SSHT oldangles;								/* 前回設定角度たち			  */
 } DC_MNG;
 
@@ -41,6 +43,10 @@ typedef struct {
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
 DC_MNG g_Mng[MS_DC_MAX];						/* DC管理データ				  */
+SINT	LAngle;									/* 左DCの角度				 */
+SINT	RAngle;									/* 右DCの角度				 */
+SINT	LCount;									/* 左のDCエンコのカウント	 */ 
+SINT	RCount;									/* 右のDCエンコのカウント	 */
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msDCInit												  */
@@ -54,8 +60,22 @@ void msDCInit(void)
 {
 	SLNG dcCounter = 0;
 	for (dcCounter = 0; dcCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); dcCounter++) {
-		msDCInitRecord(&g_Mng[dcCounter]);
+		msDCInitRecord(&g_Mng[dcCounter],dcCounter);
 	}
+
+	LAngle = MS_DC_L_INIT;
+	RAngle = MS_DC_R_INIT;
+	LCount = 0;
+	RCount = 0;
+
+	pinMode(MS_DC_L_END1_PIN, INPUT_PULLUP);
+	pinMode(MS_DC_L_END2_PIN, INPUT_PULLUP);
+	pinMode(MS_DC_R_END1_PIN, INPUT_PULLUP);
+	pinMode(MS_DC_R_END2_PIN, INPUT_PULLUP);
+
+    attachInterrupt(digitalPinToInterrupt(MS_DC_L_END1_PIN), msLDCInterrupt, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(MS_DC_R_END1_PIN), msRDCInterrupt, CHANGE);
+
 	return;
 }
 
@@ -67,14 +87,14 @@ void msDCInit(void)
 /* 戻り値		：void		: 無し											  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msDCInitRecord(DC_MNG* mng)
+void msDCInitRecord(DC_MNG* mng,SLNG id)
 {
 	if (mng == NULL) {
 		msLog("これもう無理やで");
 		return;
 	}
 	/* １レコード初期化 */
-	mng->dcid = 0;
+	mng->dcid = id;
 	mng->timerid = 0;
 	mng->busyflg = MS_DC_READY;
 	mng->oldangles = 0;
@@ -134,7 +154,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 {
 	SLNG dcCounter = 0;
 	SLNG dcRet = MS_DC_OK;
-	UINT_8t dcAng = 0;
+	//UINT_8t dcAng = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != MS_DC_MAX)) {
@@ -154,8 +174,8 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			returns[dcCounter] = MS_DC_PARAM;
 			continue;
 		}
-
 		/* DCモーター設定可能と判断 --------------------------------------*/
+		//
 		/* 指定角度からDC移動に必要な時間を算出 */
 		SSHT dTmpAngle = 0;
 		bool dcUD = false;						/* 回転方向を判断する				 */
@@ -184,14 +204,8 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		/* ##サーボモーターのレジスタ設定 */
 		switch(dcCounter){
 		case MS_DC_L :
-			/* 現在角度の取得 */
-			//UINT dcNowAng = getAngle
-
-			/* 目標角度の比較 到達してたらifに入る */
-			if(dcUD == false? (dcNowAng < g_Mng[dcCounter].oldangles) : (dcNowAng > g_Mng[dcCounter].oldangles)){
-				/* PWMを止める */
-				analogWrite(MS_DC_L_PIN, 0);
-			}else if(dcUD == true) {
+			
+			if(dcUD == true) {
 				analogWrite(MS_DC_L_PIN, MS_DC_SPEED);
 			}else{
 				analogWrite(MS_DC_L_PIN, -MS_DC_SPEED);
@@ -201,14 +215,8 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			break;
 
 		case MS_DC_R :
-			/* 現在角度の取得 */
-			//UINT dcNowAng = getAngle
-
-			/* 目標角度の比較 到達してたらifに入る */
-			if(dcUD == false? (dcNowAng < g_Mng[dcCounter].oldangles) : (dcNowAng > g_Mng[dcCounter].oldangles)){
-				/* PWMを止める */
-				analogWrite(MS_DC_R_PIN, 0);
-			}else if(dcUD == true) {
+			
+			if(dcUD == true) {
 				analogWrite(MS_DC_R_PIN, MS_DC_SPEED);
 			}else{
 				analogWrite(MS_DC_R_PIN, -MS_DC_SPEED);
@@ -216,40 +224,6 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			/* 必要ならディレイ */
   			// delay(1);
 			break:
-
-		case MS_DC_ROD :
-			/* 現在距離の取得 */
-			//UINT dcNowDis = getDistance
-
-			/* 目標距離の比較 到達してたらifに入る */
-			if(dcNowDis == g_Mng[dcCounter].oldangles){
-				/* PWMを止める */
-				analogWrite(MS_DC_ROD_PIN, 0);
-			}else if(dcUD == true) {
-				analogWrite(MS_DC_ROD_PIN, MS_DC_SPEED);
-			}else{
-				analogWrite(MS_DC_ROD_PIN, -MS_DC_SPEED);
-			}
-			/* 必要ならディレイ */
-  			// delay(1);
-			break;
-
-		case MS_DC_HAND :
-			/* 現在時間の取得 */
-			//UINT dcNowTime = getTime
-
-			/* 目標時間の比較 到達してたらifに入る */
-			if(dcNowTime > MS_DC_LIMIT_TIME){
-				/* PWMを止める */
-				analogWrite(MS_DC_HAND_PIN, 0);
-			}else if(dcUD == true) {
-				analogWrite(MS_DC_HAND_PIN, MS_DC_SPEED);
-			}else{
-				analogWrite(MS_DC_HAND_PIN, -MS_DC_SPEED);
-			}
-			/* 必要ならディレイ */
-  			// delay(1);
-			break;
 
 		default:
 			printf("おかしい\n");
@@ -274,11 +248,17 @@ void msDCTimerCallback(void* addr)
 	/* 該当のタイマーカット */
 	msTimeKill(ptr->timerid);
 
+	if(ptr->dcid == MS_DC_L){
+		analogWrite(MS_DC_L_PIN, 0);
+	}else{
+		analogWrite(MS_DC_R_PIN, 0);
+	}
+
 	/* 角度情報を逃がす */
 	tmpAngle = ptr->oldangles;
 
 	/* 設定情報クリア(Ready状態に戻す) */
-	msDCInitRecord(ptr);
+	msDCInitRecord(ptr,ptr->dcid);
 
 	/* 角度情報を戻す */
 	ptr->oldangles = tmpAngle;
@@ -287,39 +267,72 @@ void msDCTimerCallback(void* addr)
 }
 
 /* -------------------------------------------------------------------------- */
-/* 関数名		：msDCInterrupt_hl											  */
-/* 機能名		：##Aruduinoから来る割り込み通知 対応ピンがハイからロウに		  */
-/* 機能概要		：エンコーダのピンを読みその値を基に角度をインクリメントする	  */
-/* 引数			：void			 ：無し										  */
-/* 戻り値		：void			 ：無し										  */
-/* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
+/* 関数名		：msDCInterrupt 											  */
+/* 機能名		：DCモータの割込処理の初期設定									  */
+/* 機能概要		：						  */
+/* 引数			：void		: 無し											  */
+/* 戻り値		：void		: 無し											  */
+/* 作成日		：2023/12/08	筈尾　辰也		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msDCInterrupt_hl(void)
-{
-	bool msEncordRet = analogRead(pin);
+void msLDCInterrupt(){
+	/* 変化がL→Hの場合 */
+	if(degitalRead(MS_DC_L_END1_PIN) == HIGH){
+		if(degitalRead(MS_DC_L_END2_PIN) == LOW){
+			LCount--;
+		}else{
+			LCount++;
+		}
+	}else{/* 変化がH→Lの場合 */
+		if(degitalRead(MS_DC_L_END2_PIN) == LOW){
+			LCount++;
+		}else{
+			LCount--;
+		}
+	}
 
-	if(msEncordRet == true){
-		//setAng(++);
+	/* カウンタが分解能数に達した時=一回転 */
+	if(LCount > MS_DC_ENC_PRT){
+		LCount = LCount - MS_DC_ENC_PRT;
+		LAngle++;
+	}else if(LCount < -MS_DC_ENC_PRT){
+		LCount = LCount + MS_DC_ENC_PRT;
+		LAngle++;
 	}
 }
-/** -------------------------------------------------------------------------- */
-/* 関数名		：msDCInterrupt_lh											  */
-/* 機能名		：##Aruduinoから来る割り込み通知 対応ピンがロウからハイに		  */
-/* 機能概要		：エンコーダのピンを読みその値を基に角度をでクリメントする	  */
-/* 引数			：void			 ：無し										  */
-/* 戻り値		：void			 ：無し										  */
-/* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
-/* -------------------------------------------------------------------------- */
-void msDCInterrupt(void)
-{
-	bool msEncordRet = analogRead(pin);
 
-	if(msEncordRet == false){
-		//setAng(--);
+/* -------------------------------------------------------------------------- */
+/* 関数名		：msRDCInterrupt 											  */
+/* 機能名		：DCモータの割込処理の初期設定									  */
+/* 機能概要		：						  */
+/* 引数			：void		: 無し											  */
+/* 戻り値		：void		: 無し											  */
+/* 作成日		：2023/12/08	筈尾　辰也		新規作成					  */
+/* -------------------------------------------------------------------------- */
+void msRDCInterrupt(){
+	/* 変化がL→Hの場合 */
+	if(degitalRead(MS_DC_R_END1_PIN) == HIGH){
+		if(degitalRead(MS_DC_R_END2_PIN) == LOW){
+			RCount--;
+		}else{
+			RCount++;
+		}
+	}else{/* 変化がH→Lの場合 */
+		if(degitalRead(MS_DC_R_END2_PIN) == LOW){
+			RCount++;
+		}else{
+			RCount--;
+		}
+	}
+
+	/* カウンタが分解能数に達した時=一回転 */
+	if(RCount > MS_DC_ENC_PRT){
+		RCount = RCount - MS_DC_ENC_PRT;
+		RAngle++;
+	}else if(RCount < -MS_DC_ENC_PRT){
+		RCount = RCount + MS_DC_ENC_PRT;
+		RAngle++;
 	}
 }
-
-
 
 /* -------------------------------------------------------------------------- */
 /* 				Copyright HAL College of Technology & Design				  */

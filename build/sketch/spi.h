@@ -31,12 +31,12 @@
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															                              */
 /* -------------------------------------------------------------------------- */
-void init_spi(void);
+void spi(void);
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義                                                                 */
 /* -------------------------------------------------------------------------- */
-struct send_data
+typedef struct send_data
 {
   float xangle;
   float yangle;
@@ -66,9 +66,34 @@ struct send_data
   UCHR  elevator;
   UCHR  hund; 
   
-}typedef send_data;
+} send_data;
 
-/* -------------------------------------------------------------------------- */
-/* グローバル変数宣言														                              */
-/* -------------------------------------------------------------------------- */
-send_data senderdata;
+typedef struct catch_data
+{
+  uint16_t  lf_neemotor;
+  uint16_t  lf_yaw_hipjointmotor;
+  uint16_t  lf_pitch_hipjointmotor;
+  uint16_t  lc_neemotor;
+  uint16_t  lc_yaw_hipjointmotor;
+  uint16_t  lc_pitch_hipjointmotor;
+  uint16_t  lb_kneemotor;
+  uint16_t  lb_yaw_hipjointmotor;
+  uint16_t  lb_pitch_hipjointmotor;
+  uint16_t  rf_neemotor;
+  uint16_t  rf_yaw_hipjointmotor;
+  uint16_t  rf_pitch_hipjointmotor;
+  uint16_t  rc_neemotor;
+  uint16_t  rc_yaw_hipjointmotor;
+  uint16_t  rc_pitch_hipjointmotor;
+  uint16_t  rb_kneemotor;
+  uint16_t  rb_yaw_hipjointmotor;
+  uint16_t  rb_pitch_hipjointmotor;
+  uint16_t  l_armmotor;
+  uint16_t  r_armmotor;
+  uint16_t  elevator;
+  UCHR  error;
+  UCHR  hundopen;
+  UCHR  calibration;
+}catch_data;
+
+

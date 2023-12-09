@@ -26,7 +26,7 @@
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言(ローカル)												  */
 /* -------------------------------------------------------------------------- */
-void msServoInitRecord(SERVO_MNG* mng);
+void msServoInitRecord(SERVO_MNG* mng,SLNG id);
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
@@ -42,8 +42,8 @@ typedef struct {
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
 SERVO_MNG g_Mng[MS_SERVO_MAX];					/* サーボ管理データ			  */
-PCA9685 pwm = PCA9685(0x40);    //PCA9685のアドレス指定（アドレスジャンパ未接続時）
-PCA9685 pwm2 = PCA9685(0x41);   //PCA9685のアドレス指定（A0接続時）
+PCA9685 pwm = PCA9685(0x40);    				/* 一つ目のアドレス			 */
+PCA9685 pwm2 = PCA9685(0x41);   				/* 二つ目のアドレス			 */
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msServoInit												  */
@@ -57,7 +57,7 @@ void msServoInit(void)
 {
 	SLNG slCounter = 0;
 	for (slCounter = 0; slCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); slCounter++) {
-		msServoInitRecord(&g_Mng[slCounter]);
+		msServoInitRecord(&g_Mng[slCounter],slCounter);
 	}
 	return;
 }
@@ -70,14 +70,14 @@ void msServoInit(void)
 /* 戻り値		：void		: 無し											  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msServoInitRecord(SERVO_MNG* mng)
+void msServoInitRecord(SERVO_MNG* mng,SLNG id)
 {
 	if (mng == NULL) {
 		msLog("これもう無理やで");
 		return;
 	}
 	/* １レコード初期化 */
-	mng->servoid = 0;
+	mng->servoid = id;
 	mng->timerid = 0;
 	mng->busyflg = MS_SERVO_READY;
 	mng->oldangles = 0;
@@ -216,7 +216,7 @@ void msServoTimerCallback(void* addr)
 	tmpAngle = ptr->oldangles;
 
 	/* 設定情報クリア(Ready状態に戻す) */
-	msServoInitRecord(ptr);
+	msServoInitRecord(ptr,ptr->servoid);
 
 	/* 角度情報を戻す */
 	ptr->oldangles = tmpAngle;
@@ -232,12 +232,12 @@ void msServoTimerCallback(void* addr)
 /* 戻り値		：void			 ：無し										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-void msServoInterrupt(void)
-{
+//void msServoInterrupt(void)
+//{
 	/* 関数名は仮なので事由にどうぞ */
 	/* ここで必要ならデューティ比を変更する */
 	/* モータードライバが全部自動てやってくれたら最高なんだけどな・・ */
-}
+//}
 
 
 

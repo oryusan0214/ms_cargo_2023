@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- */
-/* servo.h																  */
+/* hand.h																  */
 /* ＣＬ２３・ＳＤ３２・ＲＤ４Ｃ												  */
-/* サーボ制御に係るヘッダ															  */
+/* HAND制御に係るヘッダ															  */
 /* -------------------------------------------------------------------------- */
 /* 番号		更新履歴								日付		氏名		  */
 /* -------------------------------------------------------------------------- */
@@ -17,26 +17,35 @@
 /* -------------------------------------------------------------------------- */
 /* define宣言																  */
 /* -------------------------------------------------------------------------- */
-#define MS_SERVO_MAX          (   18 )			/* サーボ個数				  */
-#define MS_SERVO_OK           (    0 )			/* 成功						  */
-#define MS_SERVO_NG           (   -1 )			/* 失敗						  */
-#define MS_SERVO_PARAM        (   -2 )			/* 引数エラー				  */
-#define MS_SERVO_READY        (    0 )			/* サーボ待機				  */
-#define MS_SERVO_BUSY         (   -3 )			/* サーボビジー				  */
-#define MS_SERVO_NOSET      ( 0xEFFF )			/* サーボ設定無し			  */
-#define SERVOMIN 150                            /* 最小パルス幅              */
-#define SERVOMAX 600                            /* 最大パルス幅              */
+#define MS_HAND_OK            (    0 )			/* 成功						  */
+#define MS_HAND_NG            (   -1 )			/* 失敗						  */
+#define MS_HAND_PARAM         (   -2 )			/* 引数エラー				  */
+#define MS_HAND_READY         (    0 )			/* HAND待機				  */
+#define MS_HAND_BUSY          (   -3 )			/* HANDビジー				  */
+#define MS_HAND_NOSET       ( 0xEFFF )			/* HAND設定無し			  */
+#define MS_HAND_SPEED              255            /* HANDモータの出力値              */
+
+#define MS_HAND_DST_MIN             0             /* HANDモータの最大距離          */
+#define MS_HAND_DST_MAX           270             /* HANDモータの最小角距離         */
+
+#define MS_HAND                      2            /* HANDのID                   */
+
+#define MS_HAND_PIN                  2            /* HANDのピン                */
+
+/* 不明 */
+#define HANDMIN                   150             /* 最小パルス幅              */
+#define HANDMAX                   600             /* 最大パルス幅              */
 
 /* ##1度の移動時間は目検で調べるしかない */
-#define MS_SERVO_MOVETIME     (   10 )			/* サーボ１度移動に必要な時間(ms) */
+#define MS_HAND_MOVETIME      (  1000)			/* HANDの移動に必要な時間(ms)  */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															  */
 /* -------------------------------------------------------------------------- */
-void msServoInit(void);
-SLNG msServoGetBusy(UCHR* busyflags, USHT max);
-SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max);
-void msServoTimerCallback(void* id);
+void msHANDInit(void);
+SLNG msHANDGetBusy(UCHR* busyflags);
+SLNG msHANDSet(SLNG* returns, SSHT* angles);
+void msHANDTimerCallback(void* id);
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義																  */
