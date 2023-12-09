@@ -8,7 +8,9 @@ void gyro_init(){
   Wire.write(0x6B);
   Wire.write(0x00);
   Wire.endTransmission(true);
+  return;
 }
+
 void gyro_get(uint16_t *gyro_data ){
   const int MPU_addr=0x68;  // I2C address of the MPU-6050
   int16_t AcX,AcY,AcZ,GyX,GyY,GyZ;
@@ -16,6 +18,7 @@ void gyro_get(uint16_t *gyro_data ){
   Wire.write(0x3B);
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_addr, 14, true);
+
   AcX = Wire.read() << 8 | Wire.read();
   AcY = Wire.read() << 8 | Wire.read();
   AcZ = Wire.read() << 8 | Wire.read();
@@ -28,4 +31,6 @@ void gyro_get(uint16_t *gyro_data ){
   gyro_data[3]=GyX;
   gyro_data[4]=GyY;
   gyro_data[5]=GyZ;
+
+  return;
 }

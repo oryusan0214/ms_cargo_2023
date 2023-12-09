@@ -21,6 +21,8 @@
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "dc.h"									/* DCに関わるヘッダ		  */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言(ローカル)												  */
@@ -38,6 +40,9 @@ typedef struct {
 	UCHR busyflg;								/* ビジーフラグ(DC個数分)	 */
 	SSHT oldangles;								/* 前回設定角度たち			  */
 } DC_MNG;
+
+/* global */
+PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
@@ -154,7 +159,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 {
 	SLNG dcCounter = 0;
 	SLNG dcRet = MS_DC_OK;
-	//UINT_8t dcAng = 0;
+	UINT_8t dcAng = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != MS_DC_MAX)) {
@@ -175,7 +180,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			continue;
 		}
 		/* DCモーター設定可能と判断 --------------------------------------*/
-		//
+		
 		/* 指定角度からDC移動に必要な時間を算出 */
 		SSHT dTmpAngle = 0;
 		bool dcUD = false;						/* 回転方向を判断する				 */
@@ -202,13 +207,18 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		g_Mng[dcCounter].oldangles = angles[dcCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
+		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
+		dcAng = map(g_Mng[slCounter].oldangles, MS_DC_DST_MIN, MS_DC_DST_MAX, DCMIN, DCMAX);
+
 		switch(dcCounter){
 		case MS_DC_L :
 			
-			if(dcUD == true) {
-				analogWrite(MS_DC_L_PIN, MS_DC_SPEED);
+			if(dcUD == true) {///
+				digitalWrite(MS_DC_L_DIR_PIN,HIGH);
+				dcPwm.setPWM(dcCounter, 0, dcAng);
 			}else{
-				analogWrite(MS_DC_L_PIN, -MS_DC_SPEED);
+				digitalWrite(MS_DC_L_DIR_PIN,LOW);
+				dcPwm.setPWM(dcCounter, 0, dcAng);
 			}
 			/* 必要ならディレイ */
   			// delay(1);
@@ -217,9 +227,11 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		case MS_DC_R :
 			
 			if(dcUD == true) {
-				analogWrite(MS_DC_R_PIN, MS_DC_SPEED);
+				digitalWrite(MS_DC_R_DIR_PIN,HIGH);
+				dcPwm.setPWM(dcCounter, 0, dcAng);
 			}else{
-				analogWrite(MS_DC_R_PIN, -MS_DC_SPEED);
+				digitalWrite(MS_DC_R_DIR_PIN,LOW);
+				dcPwm.setPWM(dcCounter, 0, dcAng);
 			}
 			/* 必要ならディレイ */
   			// delay(1);
@@ -249,9 +261,9 @@ void msDCTimerCallback(void* addr)
 	msTimeKill(ptr->timerid);
 
 	if(ptr->dcid == MS_DC_L){
-		analogWrite(MS_DC_L_PIN, 0);
+		dcPwm.setPWM(MS_DC_L_PIN, 0, 0);
 	}else{
-		analogWrite(MS_DC_R_PIN, 0);
+		dcPwm.setPWM(MS_DC_R_PIN, 0, 0);
 	}
 
 	/* 角度情報を逃がす */

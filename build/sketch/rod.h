@@ -32,9 +32,10 @@
 #define MS_ROD                      2            /* RODのID                   */
 
 #define MS_ROD_PIN                  2            /* RODのピン                */
+#define MS_ROD_DIR_PIN              8           /* RODの方向判断 */
 
-#define MS_ROD_END1_PIN             2            /* 昇降機のDCのエンコーダ用PIN1   */
-#define MS_ROD_END2_PIN             3            /* 昇降機のDCのエンコーダ用PIN2  */
+#define MS_ROD_END1_PIN            18            /* 昇降機のDCのエンコーダ用PIN1   */
+#define MS_ROD_END2_PIN            24            /* 昇降機のDCのエンコーダ用PIN2  */
 
 #define MS_ROD_INIT                 0            /* 昇降機の初期長さ       */
 #define MS_DC_ENC_PRT            4.43            /* DCエンコの分解能          */

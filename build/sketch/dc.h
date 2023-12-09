@@ -35,11 +35,13 @@
 
 #define MS_DC_L_PIN                0            /* 左肩のDCのピン             */
 #define MS_DC_R_PIN                1            /* 右肩のDCのピン              */
+#define MS_DC_L_DIR_PIN            6            /* 左肩のDCのピン             */
+#define MS_DC_R_DIR_PIN            7            /* 右肩のDCのピン              */
 
 #define MS_DC_L_END1_PIN           2            /* 左肩のDCのエンコーダ用PIN1   */
-#define MS_DC_L_END2_PIN           3            /* 左肩のDCのエンコーダ用PIN2  */
-#define MS_DC_R_END1_PIN           2            /* 右肩のDCのエンコーダ用PIN1   */
-#define MS_DC_R_END2_PIN           3            /* 右肩のDCのエンコーダ用PIN2  */
+#define MS_DC_L_END2_PIN          22            /* 左肩のDCのエンコーダ用PIN2  */
+#define MS_DC_R_END1_PIN           3            /* 右肩のDCのエンコーダ用PIN1   */
+#define MS_DC_R_END2_PIN          23            /* 右肩のDCのエンコーダ用PIN2  */
 
 #define MS_DC_L_INIT               0            /* LDCモータの初期角度       */
 #define MS_DC_R_INIT               0            /* RDCモータの初期角度       */

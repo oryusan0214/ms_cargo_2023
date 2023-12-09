@@ -26,10 +26,10 @@ int main(){
   
   /*busy信号検出*/
   msServoGetBusy(legbusy,sizeof(legbusy)/sizeof(legbusy[0]));
-  msDCGetBusy(armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
+  msDCGetBusy   (armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
 
   /*ジャイロデータ取得*/
-  gyro_get(gyro_get);
+  gyro_get(gyro_data);
 
   /*送信データを作成*/
 

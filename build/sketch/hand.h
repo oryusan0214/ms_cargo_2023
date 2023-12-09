@@ -29,9 +29,10 @@
 #define MS_HAND_DST_MIN             0             /* HANDモータの最大距離          */
 #define MS_HAND_DST_MAX           270             /* HANDモータの最小角距離         */
 
-#define MS_HAND                      2            /* HANDのID                   */
+#define MS_HAND                      3            /* HANDのID                   */
 
-#define MS_HAND_PIN                  2            /* HANDのピン                */
+#define MS_HAND_PIN                  3            /* HANDのピン                */
+#define MS_HAND_DIR_PIN              9              /* HANDの方向ピン */
 
 /* 不明 */
 #define HANDMIN                   150             /* 最小パルス幅              */
