@@ -25,11 +25,6 @@
 #include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
-/* プロトタイプ宣言(ローカル)												  */
-/* -------------------------------------------------------------------------- */
-void msHANDInitRecord(HAND_MNG* mng);
-
-/* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
 /* -------------------------------------------------------------------------- */
 typedef struct {
@@ -39,10 +34,16 @@ typedef struct {
 } HAND_MNG;
 
 /* -------------------------------------------------------------------------- */
+/* プロトタイプ宣言(ローカル)												  */
+/* -------------------------------------------------------------------------- */
+void msHANDInitRecord(HAND_MNG* mng);
+
+
+/* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-HAND_MNG g_Mng;									/* HAND管理データ				  */
-PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
+HAND_MNG h_Mng;									/* HAND管理データ				  */
+PCA9685 hPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msHANDInit												  */
@@ -54,7 +55,7 @@ PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 /* -------------------------------------------------------------------------- */
 void msHANDInit(void)
 {
-	msHANDInitRecord(&g_Mng);
+	msHANDInitRecord(&h_Mng);
 	
 	return;
 }
@@ -99,7 +100,7 @@ SLNG msHANDGetBusy(UCHR* busyflags)
 	}
 
 	/* ビジーデータコピーして返却 */
-	*busyflags = g_Mng.busyflg;
+	*busyflags = h_Mng.busyflg;
 
 	return MS_HAND_OK;
 }
@@ -135,52 +136,50 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 	}
 
 	/* HANDがビジー時は上位層の設定ミス */
-	if (g_Mng.busyflg == MS_HAND_BUSY) {
+	if (h_Mng.busyflg == MS_HAND_BUSY) {
 		*returns = MS_HAND_BUSY;
-		continue;
 	}
 	/* ##要確認：HANDの角度範囲がおかしい場合はパラメータエラー */
 	if ((setting <false) || (true < setting) && (setting != MS_HAND_NOSET)) {
 		*returns = MS_HAND_PARAM;
-		continue;
 	}
 	/* HANDモーター設定可能と判断 --------------------------------------*/
 
 
 	/* 指定角度からHAND移動に必要な時間を算出 */
-	UINT_8 handUD = 0;  					/* 回転方向を判断する				 */
+	uint8_t handUD = 0;  					/* 回転方向を判断する				 */
 											/* 初期は逆転(マイナス方向)			 */
 
     /* 開閉方向判断 */
 	/* 同じ→変化なし(1)、Low → High 開く(1)、High → Low 閉じる(2) */
-    if(g_Mng.oldangles == setting){
+    if(h_Mng.oldstate == setting){
         handUD = 0;
-    }elseif(g_Mng.oldstate < setting){
+    }else if(h_Mng.oldstate < setting){
         handUD = 1;
     }else{
         handUD = 2;
     }
 	/* タイマー計算＆コールバック設定 */
-	handRet = msSetTimer(MS_HAND_MOVETIME, &g_Mng, msHANDTimerCallback);
+	handRet = msSetTimer(MS_HAND_MOVETIME, &h_Mng, msHANDTimerCallback);
 	if ((handRet == MS_TIME_FULL) || (handRet == MS_TIME_PARAM)) {
 		msLog("タイマー関連エラー: %d", handRet);
 		return MS_HAND_NG;
 	}
 	/* タイマーIDを保管 */
-	g_Mng.timerid = handRet;
+	h_Mng.timerid = handRet;
 
 	/* 指定角度を古くしておく */
-	g_Mng.oldangles = setting;
+	h_Mng.oldstate = setting;
 
 	/* ##HANDモーターのレジスタ設定 */
 	if(handUD == 0) {//
-		dcPwm.setPWM(MS_HAND_PIN, 0, 0);
+		hPwm.setPWM(MS_HAND_PIN, 0, 0);
 	}else if(handUD == 1){
 		digitalWrite(MS_HAND_DIR_PIN,HIGH);
-		dcPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
+		hPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
 	}else{
         digitalWrite(MS_HAND_DIR_PIN,LOW);
-		dcPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
+		hPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
     }
 	/* 必要ならディレイ */
   	// delay(1);
@@ -205,16 +204,16 @@ void msHANDTimerCallback(void* addr)
 	msTimeKill(ptr->timerid);
 
 	/* モータの停止 */
-	dcPwm.setPWM(MS_HAND_PIN, 0, 0);
+	hPwm.setPWM(MS_HAND_PIN, 0, 0);
 
 	/* 角度情報を逃がす */
-	tmpDistance = ptr->olddistance;
+	tmpDistance = ptr->oldstate;
 
 	/* 設定情報クリア(Ready状態に戻す) */
-	msRODInitRecord(ptr);
+	msHANDInitRecord(ptr);
 
 	/* 角度情報を戻す */
-	ptr->olddistance = tmpDistance;
+	ptr->oldstate = tmpDistance;
 
 	return;
 }

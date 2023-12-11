@@ -17,6 +17,8 @@
        
 # 18 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 19 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
+# 20 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
+# 21 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
@@ -26,10 +28,14 @@
 void setup()
 {
 
- init();
+ initializer();
+ Serial.begin(115200);
+ test();
 }
 
 void loop()
 {
- main();
+ test();
+
+ //main();
 }

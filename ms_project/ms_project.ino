@@ -14,8 +14,10 @@
 /* includeファイル															  														*/
 /* -------------------------------------------------------------------------- */
 #pragma once
+#include "common.h"
 #include "init.h"
 #include "main.h"
+#include "test.h"
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
@@ -25,10 +27,14 @@
 void setup()
 {
 	
-	init();
+	initializer();
+	Serial.begin(115200);
+	test();
 }
 
 void loop()
 {
-	main();
+	test();
+	
+	//main();
 }

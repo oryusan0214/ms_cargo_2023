@@ -58,7 +58,7 @@ SLNG msSetTimer( ULNG CallBackTime, void* Object, void (*Callback)(void* objectt
 
 //unsigned long intにしないとオーバーフローする
 //その場合は32bitの場合で49.71026961805556日持つ
-volatile unsigned long timerCount = 0;
+
 char commonTimer();
 char setTimer();
 char delateTimer();

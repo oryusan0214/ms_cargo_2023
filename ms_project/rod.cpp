@@ -24,12 +24,6 @@
 #include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
-/* プロトタイプ宣言(ローカル)												  */
-/* -------------------------------------------------------------------------- */
-void msRODInitRecord(ROD_MNG* mng);
-void msRODInterrupt();
-
-/* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
 /* -------------------------------------------------------------------------- */
 typedef struct {
@@ -39,12 +33,19 @@ typedef struct {
 } ROD_MNG;
 
 /* -------------------------------------------------------------------------- */
+/* プロトタイプ宣言(ローカル)												  */
+/* -------------------------------------------------------------------------- */
+void msRODInitRecord(ROD_MNG* mng);
+void msRODInterrupt();
+
+
+/* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-ROD_MNG g_Mng;									/* ROD管理データ				  */
+ROD_MNG r_Mng;									/* ROD管理データ				  */
 SINT	RODAngle;								/*  */
 SINT	RODCount;
-PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
+PCA9685 rPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 
 /* -------------------------------------------------------------------------- */
@@ -57,15 +58,15 @@ PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 /* -------------------------------------------------------------------------- */
 void msRODInit(void)
 {
-	msRODInitRecord(&g_Mng);
+	msRODInitRecord(&r_Mng);
 
 	RODAngle = MS_ROD_INIT;
 	RODCount = 0;
 
-	pinMode(MS_ROD_END1_PIN, INPUT_PULLUP);
-	pinMode(MS_ROD_END2_PIN, INPUT_PULLUP);
+	pinMode(MS_ROD_ENC1_PIN, INPUT_PULLUP);
+	pinMode(MS_ROD_ENC2_PIN, INPUT_PULLUP);
 
-	attachInterrupt(digitalPinToInterrupt(MS_ROD_END1_PIN), msRODInterrupt, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(MS_ROD_ENC1_PIN), msRODInterrupt, CHANGE);
 	
 	return;
 }
@@ -87,7 +88,7 @@ void msRODInitRecord(ROD_MNG* mng)
 	/* １レコード初期化 */
 	mng->timerid = 0;
 	mng->busyflg = MS_ROD_READY;
-	mng->oldangles = 0;
+	mng->olddistance = 0;
 	return;
 }
 
@@ -110,7 +111,7 @@ SLNG msRODGetBusy(UCHR* busyflags)
 	}
 
 	/* ビジーデータコピーして返却 */
-	*busyflags = g_Mng.busyflg;
+	*busyflags = r_Mng.busyflg;
 
 	return MS_ROD_OK;
 }
@@ -140,20 +141,18 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 	SLNG rodRet = MS_ROD_OK;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((returns == NULL) || (angles == NULL)) {
+	if ((returns == NULL) || (distance == NULL)) {
 		msLog("引数エラー");
 		return MS_ROD_PARAM;
 	}
 
 	/* RODがビジー時は上位層の設定ミス */
-	if (g_Mng.busyflg == MS_ROD_BUSY) {
+	if (r_Mng.busyflg == MS_ROD_BUSY) {
 		*returns = MS_ROD_BUSY;
-		continue;
 	}
 	/* ##要確認：RODの角度範囲がおかしい場合はパラメータエラー */
-	if ((*distance < MS_ROD_ANG_MIN) || ((*distance > MS_ROD_ANG_MAX) && (*distance != MS_ROD_NOSET))) {
+	if ((*distance < MS_ROD_DST_MIN) || ((*distance > MS_ROD_DST_MAX) && (*distance != MS_ROD_NOSET))) {
 		*returns = MS_ROD_PARAM;
-		continue;
 	}
 	/* RODモーター設定可能と判断 --------------------------------------*/
 
@@ -161,7 +160,7 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 	SSHT dTmpDistance = 0;
 	bool rodUD = false;						/* 回転方向を判断する				 */
 											/* 初期は逆転(マイナス方向)			 */
-	dTmpDistance = g_Mng.olddistance - *distance;
+	dTmpDistance = r_Mng.olddistance - *distance;
 	/* マイナス角度をプラスに補正 */
 	if (dTmpDistance < 0) {
 		dTmpDistance = dTmpDistance * -1;
@@ -171,24 +170,24 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 	dTmpDistance = dTmpDistance * MS_ROD_MOVETIME;
 
 	/* タイマー計算＆コールバック設定 */
-	rodRet = msSetTimer(dTmpDistance, &g_Mng, msRODTimerCallback);
+	rodRet = msSetTimer(dTmpDistance, &r_Mng, msRODTimerCallback);
 	if ((rodRet == MS_TIME_FULL) || (rodRet == MS_TIME_PARAM)) {
 		msLog("タイマー関連エラー: %d", rodRet);
 		return MS_ROD_NG;
 	}
 	/* タイマーIDを保管 */
-	g_Mng.timerid = rodRet;
+	r_Mng.timerid = rodRet;
 
 	/* 指定角度を古くしておく */
-	g_Mng.oldangles = *distance;
+	r_Mng.olddistance = *distance;
 
 	/* ##サーボモーターのレジスタ設定 */
 	if(rodUD == true) {
 		digitalWrite(MS_ROD_DIR_PIN,HIGH);
-		dcPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
+		rPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
 	}else{
 		digitalWrite(MS_ROD_DIR_PIN,LOW);
-		dcPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
+		rPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
 	}
 	/* 必要ならディレイ */
   	// delay(1);
@@ -211,7 +210,7 @@ void msRODTimerCallback(void* addr)
 	/* 該当のタイマーカット */
 	msTimeKill(ptr->timerid);
 
-	dcPwm.setPWM(MS_ROD_PIN, 0, 0);
+	rPwm.setPWM(MS_ROD_PIN, 0, 0);
 
 	/* 角度情報を逃がす */
 	tmpDistance = ptr->olddistance;
@@ -235,14 +234,14 @@ void msRODTimerCallback(void* addr)
 /* -------------------------------------------------------------------------- */
 void msRODInterrupt(){
 	/* 変化がL→Hの場合 */
-	if(degitalRead(MS_ROD_END1_PIN) == HIGH){
-		if(degitalRead(MS_ROD_END2_PIN) == LOW){
+	if(digitalRead(MS_ROD_ENC1_PIN) == HIGH){
+		if(digitalRead(MS_ROD_ENC2_PIN) == LOW){
 			RODCount--;
 		}else{
 			RODCount++;
 		}
 	}else{/* 変化がH→Lの場合 */
-		if(degitalRead(MS_ROD_END2_PIN) == LOW){
+		if(digitalRead(MS_ROD_ENC2_PIN) == LOW){
 			RODCount++;
 		}else{
 			RODCount--;

@@ -24,13 +24,6 @@
 #include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
-/* プロトタイプ宣言(ローカル)												  */
-/* -------------------------------------------------------------------------- */
-void msDCInitRecord(DC_MNG* mng,SLNG id);
-void msLDCInterrupt();
-void msRDCInterrupt();
-
-/* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
 /* -------------------------------------------------------------------------- */
 typedef struct {
@@ -40,13 +33,21 @@ typedef struct {
 	SSHT oldangles;								/* 前回設定角度たち			  */
 } DC_MNG;
 
+/* -------------------------------------------------------------------------- */
+/* プロトタイプ宣言(ローカル)												  */
+/* -------------------------------------------------------------------------- */
+void msDCInitRecord(DC_MNG* mng,SLNG id);
+void msLDCInterrupt();
+void msRDCInterrupt();
+
+
 /* global */
 PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-DC_MNG g_Mng[MS_DC_MAX];						/* DC管理データ				  */
+DC_MNG dc_Mng[MS_DC_MAX];						/* DC管理データ				  */
 SINT	LAngle;									/* 左DCの角度				 */
 SINT	RAngle;									/* 右DCの角度				 */
 SINT	LCount;									/* 左のDCエンコのカウント	 */ 
@@ -63,8 +64,8 @@ SINT	RCount;									/* 右のDCエンコのカウント	 */
 void msDCInit(void)
 {
 	SLNG dcCounter = 0;
-	for (dcCounter = 0; dcCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); dcCounter++) {
-		msDCInitRecord(&g_Mng[dcCounter],dcCounter);
+	for (dcCounter = 0; dcCounter < ( sizeof(dc_Mng) / sizeof(dc_Mng[0])); dcCounter++) {
+		msDCInitRecord(&dc_Mng[dcCounter],dcCounter);
 	}
 
 	LAngle = MS_DC_L_INIT;
@@ -128,7 +129,7 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 
 	/* ビジーデータコピーして返却 */
 	for (dcIndex = 0; dcIndex < MS_DC_MAX; dcIndex++) {
-		busyflags[dcIndex] = g_Mng[dcIndex].busyflg;
+		busyflags[dcIndex] = dc_Mng[dcIndex].busyflg;
 	}
 	return MS_DC_OK;
 }
@@ -158,7 +159,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 {
 	SLNG dcCounter = 0;
 	SLNG dcRet = MS_DC_OK;
-	UINT_8t dcAng = 0;
+	uint8_t dcAng = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != MS_DC_MAX)) {
@@ -169,7 +170,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 	/* DCの個数分ループして各種設定 */
 	for (dcCounter == 0; dcCounter < MS_DC_MAX; dcCounter++) {
 		/* DCがビジー時は上位層の設定ミス */
-		if (g_Mng[dcCounter].busyflg == MS_DC_BUSY) {
+		if (dc_Mng[dcCounter].busyflg == MS_DC_BUSY) {
 			returns[dcCounter] = MS_DC_BUSY;
 			continue;
 		}
@@ -184,7 +185,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		SSHT dTmpAngle = 0;
 		bool dcUD = false;						/* 回転方向を判断する				 */
 												/* 初期は逆転(マイナス方向)			 */
-		dTmpAngle = g_Mng[dcCounter].oldangles - angles[dcCounter];
+		dTmpAngle = dc_Mng[dcCounter].oldangles - angles[dcCounter];
 		/* マイナス角度をプラスに補正 */
 		if (dTmpAngle < 0) {
 			dTmpAngle = dTmpAngle * -1;
@@ -194,20 +195,20 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 		dTmpAngle = dTmpAngle * MS_DC_MOVETIME;
 
 		/* タイマー計算＆コールバック設定 */
-		dcRet = msSetTimer(dTmpAngle, &g_Mng[dcCounter], msDCTimerCallback);
+		dcRet = msSetTimer(dTmpAngle, &dc_Mng[dcCounter], msDCTimerCallback);
 		if ((dcRet == MS_TIME_FULL) || (dcRet == MS_TIME_PARAM)) {
 			msLog("タイマー関連エラー: %d", dcRet);
 			return MS_DC_NG;
 		}
 		/* タイマーIDを保管 */
-		g_Mng[dcCounter].timerid = dcRet;
+		dc_Mng[dcCounter].timerid = dcRet;
 
 		/* 指定角度を古くしておく */
-		g_Mng[dcCounter].oldangles = angles[dcCounter];
+		dc_Mng[dcCounter].oldangles = angles[dcCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
 		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
-		dcAng = map(g_Mng[slCounter].oldangles, MS_DC_DST_MIN, MS_DC_DST_MAX, DCMIN, DCMAX);
+		dcAng = map(dc_Mng[dcCounter].oldangles, MS_DC_ANG_MIN, MS_DC_ANG_MAX, DCMIN, DCMAX);
 
 		switch(dcCounter){
 		case MS_DC_L :
@@ -234,7 +235,7 @@ SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
 			}
 			/* 必要ならディレイ */
   			// delay(1);
-			break:
+			break;
 
 		default:
 			printf("おかしい\n");
@@ -287,14 +288,14 @@ void msDCTimerCallback(void* addr)
 /* -------------------------------------------------------------------------- */
 void msLDCInterrupt(){
 	/* 変化がL→Hの場合 */
-	if(degitalRead(MS_DC_L_END1_PIN) == HIGH){
-		if(degitalRead(MS_DC_L_END2_PIN) == LOW){
+	if(digitalRead(MS_DC_L_END1_PIN) == HIGH){
+		if(digitalRead(MS_DC_L_END2_PIN) == LOW){
 			LCount--;
 		}else{
 			LCount++;
 		}
 	}else{/* 変化がH→Lの場合 */
-		if(degitalRead(MS_DC_L_END2_PIN) == LOW){
+		if(digitalRead(MS_DC_L_END2_PIN) == LOW){
 			LCount++;
 		}else{
 			LCount--;
@@ -321,14 +322,14 @@ void msLDCInterrupt(){
 /* -------------------------------------------------------------------------- */
 void msRDCInterrupt(){
 	/* 変化がL→Hの場合 */
-	if(degitalRead(MS_DC_R_END1_PIN) == HIGH){
-		if(degitalRead(MS_DC_R_END2_PIN) == LOW){
+	if(digitalRead(MS_DC_R_END1_PIN) == HIGH){
+		if(digitalRead(MS_DC_R_END2_PIN) == LOW){
 			RCount--;
 		}else{
 			RCount++;
 		}
 	}else{/* 変化がH→Lの場合 */
-		if(degitalRead(MS_DC_R_END2_PIN) == LOW){
+		if(digitalRead(MS_DC_R_END2_PIN) == LOW){
 			RCount++;
 		}else{
 			RCount--;
