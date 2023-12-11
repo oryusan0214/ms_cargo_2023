@@ -8,17 +8,17 @@ int test()
   SCHR f_test_output[10]={0,0,0,0,0,0,0,0,0,0};
   
 
-  Serial.println("--- START ----\n");
+  Serial.println("\n--- START ----\n");
   Serial.print("--- float ---");
-  sprintf(f_test_output,"%#x",f_test);
+  sprintf(f_test_output,"%#x%#x%#x%#x",f_test);
   Serial.println(f_test_output);
   
 
   Serial.print("--- char ---");
-  *(float*)c_test = f_test;
+  *(float*)&c_test = f_test;
 
-  sprintf(c_test_output,"%#x",c_test);
+  sprintf(c_test_output,"%#x%#x%#x%#x",c_test[0],c_test[1],c_test[2],c_test[3]);
   Serial.println(c_test_output);
-  Serial.println("--- END ----\n");
+  Serial.println("\n--- END ----\n");
   return 0;
 }
