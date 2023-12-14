@@ -43,6 +43,8 @@
 #define RODMIN                   150             /* 最小パルス幅              */
 #define RODMAX                   600             /* 最大パルス幅              */
 
+#define ROD_PERIOD_TIME              25             /* PIDの周期タイム           */
+
 /* ##1度の移動時間は目検で調べるしかない */
 #define MS_ROD_MOVETIME     (   10 )			/* ROD 1 mm移動に必要な時間(ms)  */
 
@@ -51,7 +53,7 @@
 /* -------------------------------------------------------------------------- */
 void msRODInit(void);
 SLNG msRODGetBusy(UCHR* busyflags);
-SLNG msRODSet(SLNG* returns, SSHT* angles);
+SLNG msRODSet(SLNG* returns, uint16_t* angles);
 void msRODTimerCallback(void* id);
 
 /* -------------------------------------------------------------------------- */

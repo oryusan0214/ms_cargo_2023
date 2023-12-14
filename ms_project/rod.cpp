@@ -20,6 +20,8 @@
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "rod.h"									/* RODに関わるヘッダ		  */
+#include <stdint.h>								/*  */
+#include <PID_v1.h>								/*  */
 #include <Wire.h>
 #include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
@@ -46,7 +48,7 @@ ROD_MNG r_Mng;									/* ROD管理データ				  */
 SINT	RODAngle;								/*  */
 SINT	RODCount;
 PCA9685 rPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
-
+///
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msRODInit												  */

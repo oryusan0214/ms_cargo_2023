@@ -51,7 +51,7 @@
 #define DCMIN                   150             /* 最小パルス幅              */
 #define DCMAX                   600             /* 最大パルス幅              */
 
-#define PERIOD_TIME              25             /* PIDの周期タイム           */
+#define DC_PERIOD_TIME              25             /* PIDの周期タイム           */
 
 /* ##1度の移動時間は目検で調べるしかない */
 #define MS_DC_MOVETIME     (   10 )			/* DC１度移動に必要な時間(ms)    */

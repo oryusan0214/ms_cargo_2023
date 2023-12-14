@@ -43,30 +43,35 @@ void msDCInitRecord(DC_MNG* mng,SLNG id);
 void msLDCInterrupt();
 void msRDCInterrupt();
 
-
-/* global */
-PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
-
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-DC_MNG dc_Mng[MS_DC_MAX];						/* DC管理データ				  */
+DC_MNG 	dc_Mng[MS_DC_MAX];						/* DC管理データ				  */
 SINT	LAngle;									/* 左DCの角度				 */
 SINT	RAngle;									/* 右DCの角度				 */
 SINT	LCount;									/* 左のDCエンコのカウント	 */ 
 SINT	RCount;									/* 右のDCエンコのカウント	 */
+///
+double LSetpoint, LInput, LOutput;     			/* PIDの関数に用いる変数L	 */
+double RSetpoint, RInput, ROutput;     			/* PIDの関数に用いる変数R	 */
+
 volatile SINT	LSpeed = 0;            			/* 出力値			       */
 volatile SINT	RSpeed = 0;            			/* 出力値			       */
-//
-double Setpoint, Input, Output;     			/* PIDの関数に用いる変数	 */
 
 /* Gain */
-double Kp=4.00;
-double Ki=0.00;
-double Kd=0.20;
+double LKp=4.00;
+double LKi=0.00;
+double LKd=0.20;
+double RKp=4.00;
+double RKi=0.00;
+double RKd=0.20;
 
 /* PIDの変数宣言 */
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+PID LmyPID(&LInput, &LOutput, &LSetpoint, LKp, LKi, LKd, DIRECT);
+PID RmyPID(&RInput, &ROutput, &RSetpoint, RKp, RKi, RKd, DIRECT);
+
+/* global */
+PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msDCInit												  */
@@ -78,16 +83,23 @@ PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 /* -------------------------------------------------------------------------- */
 void msDCInit(void)
 {
+	/* 構造体情報の初期化 */
 	SLNG dcCounter = 0;
 	for (dcCounter = 0; dcCounter < ( sizeof(dc_Mng) / sizeof(dc_Mng[0])); dcCounter++) {
 		msDCInitRecord(&dc_Mng[dcCounter],dcCounter);
 	}
 
+	/* 変数の初期化 */
 	LAngle = MS_DC_L_INIT;
 	RAngle = MS_DC_R_INIT;
 	LCount = 0;
 	RCount = 0;
+	LInput = LAngle;
+	RInput = RAngle;
+	LSetpoint = 0;
+	RSetpoint = 0;
 
+	/* Pin Assign */
 	pinMode(MS_DC_L_PIN, OUTPUT);
 	pinMode(MS_DC_L_DIR_PIN, OUTPUT);
 	pinMode(MS_DC_R_PIN, OUTPUT);
@@ -97,10 +109,27 @@ void msDCInit(void)
 	pinMode(MS_DC_R_END1_PIN, INPUT);
 	pinMode(MS_DC_R_END2_PIN, INPUT);
 
+	/* 割り込み設定 */
     attachInterrupt(digitalPinToInterrupt(MS_DC_L_END1_PIN), msLDCInterrupt, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(MS_DC_R_END1_PIN), msRDCInterrupt, CHANGE);
 
-	//pid2つ用意
+	/* PID Setup */
+	LmyPID.SetMode(AUTOMATIC);
+	LmyPID.SetSampleTime(sampling_time);
+	LmyPID.SetOutputLimits( (-1 * max_speed), max_speed);
+	RmyPID.SetMode(AUTOMATIC);
+	RmyPID.SetSampleTime(sampling_time);
+	RmyPID.SetOutputLimits( (-1 * max_speed), max_speed);
+
+	/* pwm setup */
+	dcpwm.begin();					            /* 初期設定 (アドレス0x40用) */
+  	Wire.setClock(400000);            			/* Clock設定               */
+	dcpwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
+	dcpwm.setPWM(0, 0, 0);              		/* PWM設定                 */
+
+	/* 進行方向の初期設定 */
+	digitalWrite( MS_DC_L_DIR_PIN, 1 ); 		/* 正転                    */
+	digitalWrite( MS_DC_R_DIR_PIN, 1 ); 		/* 正転                    */
 
 	return;
 }
@@ -180,7 +209,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 {
 	SLNG dcCounter = 0;
 	SLNG dcRet = MS_DC_OK;
-	uint8_t dcAng = 0;
+	uint8_t speed = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != MS_DC_MAX)) {
@@ -228,31 +257,38 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		dc_Mng[dcCounter].oldangles = angles[dcCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
-		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
-		dcAng = map(dc_Mng[dcCounter].oldangles, MS_DC_ANG_MIN, MS_DC_ANG_MAX, DCMIN, DCMAX);
-
 		switch(dcCounter){
 		case MS_DC_L :
+			LInput 		= LAngle;
+			LSetpoint 	= dc_Mng[dcCounter].oldangles;
+			LmyPID.Compute();
+			speed = abs((int)LOutput);
+			speed = map(speed,0,MS_DC_SPEED,0,4095);
 			
 			if(dcUD == true) {///
 				digitalWrite(MS_DC_L_DIR_PIN,HIGH);
-				dcPwm.setPWM(dcCounter, 0, dcAng);
+				dcPwm.setPWM(dcCounter, 0, speed);
 			}else{
 				digitalWrite(MS_DC_L_DIR_PIN,LOW);
-				dcPwm.setPWM(dcCounter, 0, dcAng);
+				dcPwm.setPWM(dcCounter, 0, speed);
 			}
 			/* 必要ならディレイ */
   			// delay(1);
 			break;
 
 		case MS_DC_R :
+			RInput 		= RAngle;
+			RSetpoint 	= dc_Mng[dcCounter].oldangles;
+			RmyPID.Compute();
+			speed = abs((int)ROutput);
+			speed = map(speed,0,MS_DC_SPEED,0,4095);
 			
 			if(dcUD == true) {
 				digitalWrite(MS_DC_R_DIR_PIN,HIGH);
-				dcPwm.setPWM(dcCounter, 0, dcAng);
+				dcPwm.setPWM(dcCounter, 0, speed);
 			}else{
 				digitalWrite(MS_DC_R_DIR_PIN,LOW);
-				dcPwm.setPWM(dcCounter, 0, dcAng);
+				dcPwm.setPWM(dcCounter, 0, speed);
 			}
 			/* 必要ならディレイ */
   			// delay(1);

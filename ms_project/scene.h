@@ -1,5 +1,10 @@
-#define SCENE_OK (  0)
-#define SCENE_NG ( -1)
+#define SCENE_OK      (      0)
+#define SCENE_NG      (     -1)
+#define SERVO_NUM     (     18)
+#define ARM_NUM       (      2)
+#define ELEVATOR_NUM  (      1)
+#define HANDOPEN_NUM  (      1)
+
 #include <stdint.h>
 
 
@@ -31,6 +36,6 @@ typedef struct  Scene
   uint16_t  hand;
 } Scene;
 
-void sceneInuput(*Scene);
+void sceneInuput(Scene*);
 int sceneBusy();
 int scene();

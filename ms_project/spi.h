@@ -43,23 +43,23 @@ typedef struct send_data
   uint16_t  weight;
   UCHR  error;
   UCHR  lf_neemotor;
-  UCHR  lf_yaw_hipjointmotor;
   UCHR  lf_pitch_hipjointmotor;
+  UCHR  lf_yaw_hipjointmotor;
   UCHR  lc_neemotor;
-  UCHR  lc_yaw_hipjointmotor;
   UCHR  lc_pitch_hipjointmotor;
+  UCHR  lc_yaw_hipjointmotor;
   UCHR  lb_kneemotor;
-  UCHR  lb_yaw_hipjointmotor;
   UCHR  lb_pitch_hipjointmotor;
+  UCHR  lb_yaw_hipjointmotor;
   UCHR  rf_neemotor;
-  UCHR  rf_yaw_hipjointmotor;
   UCHR  rf_pitch_hipjointmotor;
+  UCHR  rf_yaw_hipjointmotor;
   UCHR  rc_neemotor;
-  UCHR  rc_yaw_hipjointmotor;
   UCHR  rc_pitch_hipjointmotor;
+  UCHR  rc_yaw_hipjointmotor;
   UCHR  rb_kneemotor;
-  UCHR  rb_yaw_hipjointmotor;
   UCHR  rb_pitch_hipjointmotor;
+  UCHR  rb_yaw_hipjointmotor;
   UCHR  l_armmotor;
   UCHR  r_armmotor;
   UCHR  elevator;
@@ -67,29 +67,28 @@ typedef struct send_data
   UCHR  reservation1;
   UCHR  reservation2;
   UCHR  reservation3;
-  
 } send_data;
 
 typedef struct catch_data
 {
   uint16_t  lf_neemotor;
-  uint16_t  lf_yaw_hipjointmotor;
   uint16_t  lf_pitch_hipjointmotor;
+  uint16_t  lf_yaw_hipjointmotor;
   uint16_t  lc_neemotor;
-  uint16_t  lc_yaw_hipjointmotor;
   uint16_t  lc_pitch_hipjointmotor;
+  uint16_t  lc_yaw_hipjointmotor;
   uint16_t  lb_kneemotor;
-  uint16_t  lb_yaw_hipjointmotor;
   uint16_t  lb_pitch_hipjointmotor;
+  uint16_t  lb_yaw_hipjointmotor;
   uint16_t  rf_neemotor;
-  uint16_t  rf_yaw_hipjointmotor;
   uint16_t  rf_pitch_hipjointmotor;
+  uint16_t  rf_yaw_hipjointmotor;
   uint16_t  rc_neemotor;
-  uint16_t  rc_yaw_hipjointmotor;
   uint16_t  rc_pitch_hipjointmotor;
+  uint16_t  rc_yaw_hipjointmotor;
   uint16_t  rb_kneemotor;
-  uint16_t  rb_yaw_hipjointmotor;
   uint16_t  rb_pitch_hipjointmotor;
+  uint16_t  rb_yaw_hipjointmotor;
   uint16_t  l_armmotor;
   uint16_t  r_armmotor;
   uint16_t  elevator;
@@ -99,6 +98,5 @@ typedef struct catch_data
   UCHR  reservation1;
   UCHR  reservation2;
   UCHR  reservation3;
-  
 }catch_data;
 
