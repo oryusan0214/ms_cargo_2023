@@ -41,7 +41,7 @@ typedef struct send_data
   float xangle;
   float yangle;
   float zangle;
-  UINT  weight;
+  uint16_t  weight;
   UCHR  error;
   UCHR  lf_neemotor;
   UCHR  lf_yaw_hipjointmotor;
@@ -64,7 +64,10 @@ typedef struct send_data
   UCHR  l_armmotor;
   UCHR  r_armmotor;
   UCHR  elevator;
-  UCHR  hund; 
+  UCHR  hund;
+  UCHR  reservation1;
+  UCHR  reservation2;
+  UCHR  reservation3;
   
 } send_data;
 
@@ -92,8 +95,11 @@ typedef struct catch_data
   uint16_t  r_armmotor;
   uint16_t  elevator;
   UCHR  error;
-  UCHR  hundopen;
+  UCHR  handopen;
   UCHR  calibration;
+  UCHR  reservation1;
+  UCHR  reservation2;
+  UCHR  reservation3;
+  
 }catch_data;
-
 

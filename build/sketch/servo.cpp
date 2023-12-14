@@ -126,7 +126,7 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 /*				：			:			 ： MS_SERVO_OK    :設定成功		  */
 /*				：			:			 ： MS_SERVO_BUSY  :ビジーの為失敗    */
 /*				：			:			 ： MS_SERVO_PARAM :角度がおかしい    */
-/*				：SSHT*		: angles	 ：[I N] 各サーボの設定角度			  */
+/*				：uint16_t*	: angles	 ：[I N] 各サーボの設定角度			  */
 /*				：			:			 ：何もしない場合はMS_SERVO_NOSET	  */
 /*				：USHT		: max		 ：[I N] 第一・第二引数の配列数(18個) */
 /* 戻り値		：SLNG		: MS_SERVO_OK	：正常終了						  */
@@ -134,8 +134,9 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 /* ■■注意■■ ：正常終了を返しても、第一引数のreturnsはエラーの場合がある為 */
 /*				：必ずチェックする事！										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
+/* 更新日		：2023/12/13	山田　龍之介	anglesを仕様に合わせて変更					  */
 /* -------------------------------------------------------------------------- */
-SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max)
+SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 {
 	SLNG slCounter	= 0;
 	SLNG slRet		= MS_SERVO_OK;

@@ -18,7 +18,7 @@
 #pragma once
 #include "common.h"
 #include "init.h"
-
+#include <SPI.h>
 #include "test.h"
 /* ------------------------------------------------------------------------ */
 /* */
@@ -28,13 +28,18 @@
 
 #line 27 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup();
-#line 33 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 38 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void loop();
 #line 27 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup()
 {
 	Serial.begin(115200);
-	test();
+	//SPI.setBitOrder(MSBFIRST);
+  //SPI.setDataMode(SPI_MODE2);
+  //SPI.setClockDivider(SPI_CLOCK_DIV2);
+  
+  SPI.begin();
+  digitalWrite(SS, HIGH);
 }
 
 void loop()

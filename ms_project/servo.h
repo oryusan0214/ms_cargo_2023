@@ -38,7 +38,7 @@
 /* -------------------------------------------------------------------------- */
 void msServoInit(void);
 SLNG msServoGetBusy(UCHR* busyflags, USHT max);
-SLNG msServoSet(SLNG* returns, SSHT* angles, USHT max);
+SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max);
 void msServoTimerCallback(void* id);
 
 /* -------------------------------------------------------------------------- */

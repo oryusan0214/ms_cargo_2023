@@ -20,6 +20,8 @@
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "dc.h"									/* DCに関わるヘッダ		  */
+#include <stdint.h>								/*  */
+#include <PID_v1.h>								/*  */
 #include <Wire.h>
 #include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
@@ -52,6 +54,18 @@ SINT	LAngle;									/* 左DCの角度				 */
 SINT	RAngle;									/* 右DCの角度				 */
 SINT	LCount;									/* 左のDCエンコのカウント	 */ 
 SINT	RCount;									/* 右のDCエンコのカウント	 */
+volatile SINT	LSpeed = 0;            			/* 出力値			       */
+volatile SINT	RSpeed = 0;            			/* 出力値			       */
+//
+double Setpoint, Input, Output;     			/* PIDの関数に用いる変数	 */
+
+/* Gain */
+double Kp=4.00;
+double Ki=0.00;
+double Kd=0.20;
+
+/* PIDの変数宣言 */
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msDCInit												  */
@@ -73,13 +87,19 @@ void msDCInit(void)
 	LCount = 0;
 	RCount = 0;
 
-	pinMode(MS_DC_L_END1_PIN, INPUT_PULLUP);
-	pinMode(MS_DC_L_END2_PIN, INPUT_PULLUP);
-	pinMode(MS_DC_R_END1_PIN, INPUT_PULLUP);
-	pinMode(MS_DC_R_END2_PIN, INPUT_PULLUP);
+	pinMode(MS_DC_L_PIN, OUTPUT);
+	pinMode(MS_DC_L_DIR_PIN, OUTPUT);
+	pinMode(MS_DC_R_PIN, OUTPUT);
+	pinMode(MS_DC_R_DIR_PIN, OUTPUT);	
+	pinMode(MS_DC_L_END1_PIN, INPUT);
+	pinMode(MS_DC_L_END2_PIN, INPUT);
+	pinMode(MS_DC_R_END1_PIN, INPUT);
+	pinMode(MS_DC_R_END2_PIN, INPUT);
 
     attachInterrupt(digitalPinToInterrupt(MS_DC_L_END1_PIN), msLDCInterrupt, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(MS_DC_R_END1_PIN), msRDCInterrupt, CHANGE);
+
+	//pid2つ用意
 
 	return;
 }
@@ -146,7 +166,7 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 /*				：			:			 ： MS_DC_OK    :設定成功		  */
 /*				：			:			 ： MS_DC_BUSY  :ビジーの為失敗    */
 /*				：			:			 ： MS_DC_PARAM :角度がおかしい    */
-/*				：SSHT*		: angles	 ：[I N] 各DCの設定角度			  */
+/*				：uint16_t*	: angles	 ：[I N] 各DCの設定角度			  */
 /*				：			:			 ：何もしない場合はMS_DC_NOSET	  */
 /*				：USHT		: max		 ：[I N] 第一・第二引数の配列数(18個) */
 /* 戻り値		：SLNG		: MS_DC_OK	：正常終了						  */
@@ -155,7 +175,7 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 /*				：必ずチェックする事！										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-SLNG msDCSet(SLNG* returns, SSHT* angles, USHT max)
+SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 {
 	SLNG dcCounter = 0;
 	SLNG dcRet = MS_DC_OK;

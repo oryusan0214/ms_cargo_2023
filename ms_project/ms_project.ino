@@ -16,7 +16,7 @@
 #pragma once
 #include "common.h"
 #include "init.h"
-
+#include <SPI.h>
 #include "test.h"
 /* ------------------------------------------------------------------------ */
 /* */
@@ -27,7 +27,12 @@
 void setup()
 {
 	Serial.begin(115200);
-	test();
+	//SPI.setBitOrder(MSBFIRST);
+  //SPI.setDataMode(SPI_MODE2);
+  //SPI.setClockDivider(SPI_CLOCK_DIV2);
+  
+  SPI.begin();
+  digitalWrite(SS, HIGH);
 }
 
 void loop()
