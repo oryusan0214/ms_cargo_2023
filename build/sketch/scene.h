@@ -33,7 +33,6 @@ typedef struct  Scene
   uint16_t  l_armmotor;
   uint16_t  r_armmotor;
   uint16_t  elevator;
-  uint16_t  arm;
   uint16_t  hand;
 } Scene;
 
