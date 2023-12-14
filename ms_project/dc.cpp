@@ -17,13 +17,13 @@
 #include <string.h>								/* 初期化関連				  */
 #include <stdarg.h>								/* システムログ				  */
 #include <stdlib.h>								/* メモリ操作				  */
+#include <stdint.h>								/* uint周り					 */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
+#include <PID_v1.h>								/*  */
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "dc.h"									/* DCに関わるヘッダ		  */
-#include <stdint.h>								/*  */
-#include <PID_v1.h>								/*  */
-#include <Wire.h>
-#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
@@ -45,12 +45,12 @@ void msRDCInterrupt();
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-DC_MNG 	dc_Mng[MS_DC_MAX];						/* DC管理データ				  */
+DC_MNG 	dc_Mng[DC_MAX];						/* DC管理データ				  */
 SINT	LAngle;									/* 左DCの角度				 */
 SINT	RAngle;									/* 右DCの角度				 */
 SINT	LCount;									/* 左のDCエンコのカウント	 */ 
 SINT	RCount;									/* 右のDCエンコのカウント	 */
-///
+
 double LSetpoint, LInput, LOutput;     			/* PIDの関数に用いる変数L	 */
 double RSetpoint, RInput, ROutput;     			/* PIDの関数に用いる変数R	 */
 
@@ -69,7 +69,7 @@ double RKd=0.20;
 PID LmyPID(&LInput, &LOutput, &LSetpoint, LKp, LKi, LKd, DIRECT);
 PID RmyPID(&RInput, &ROutput, &RSetpoint, RKp, RKi, RKd, DIRECT);
 
-/* global */
+/* i2c address */
 PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 
 /* -------------------------------------------------------------------------- */
@@ -82,6 +82,7 @@ PCA9685 dcPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 /* -------------------------------------------------------------------------- */
 void msDCInit(void)
 {
+	/* プログラム起動時に一度だけ走る初期化処理 */
 	/* 構造体情報の初期化 */
 	SLNG dcCounter = 0;
 	for (dcCounter = 0; dcCounter < ( sizeof(dc_Mng) / sizeof(dc_Mng[0])); dcCounter++) {
@@ -89,8 +90,8 @@ void msDCInit(void)
 	}
 
 	/* 変数の初期化 */
-	LAngle = MS_DC_L_INIT;
-	RAngle = MS_DC_R_INIT;
+	LAngle = DC_L_INIT;
+	RAngle = DC_R_INIT;
 	LCount = 0;
 	RCount = 0;
 	LInput = LAngle;
@@ -99,36 +100,36 @@ void msDCInit(void)
 	RSetpoint = 0;
 
 	/* Pin Assign */
-	pinMode(MS_DC_L_PIN, OUTPUT);
-	pinMode(MS_DC_L_DIR_PIN, OUTPUT);
-	pinMode(MS_DC_R_PIN, OUTPUT);
-	pinMode(MS_DC_R_DIR_PIN, OUTPUT);	
-	pinMode(MS_DC_L_END1_PIN, INPUT);
-	pinMode(MS_DC_L_END2_PIN, INPUT);
-	pinMode(MS_DC_R_END1_PIN, INPUT);
-	pinMode(MS_DC_R_END2_PIN, INPUT);
+	pinMode(DC_L_PIN, OUTPUT);
+	pinMode(DC_L_DIR_PIN, OUTPUT);
+	pinMode(DC_R_PIN, OUTPUT);
+	pinMode(DC_R_DIR_PIN, OUTPUT);	
+	pinMode(DC_L_END1_PIN, INPUT);
+	pinMode(DC_L_END2_PIN, INPUT);
+	pinMode(DC_R_END1_PIN, INPUT);
+	pinMode(DC_R_END2_PIN, INPUT);
 
 	/* 割り込み設定 */
-    attachInterrupt(digitalPinToInterrupt(MS_DC_L_END1_PIN), msLDCInterrupt, CHANGE);
-	attachInterrupt(digitalPinToInterrupt(MS_DC_R_END1_PIN), msRDCInterrupt, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(DC_L_END1_PIN), msLDCInterrupt, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(DC_R_END1_PIN), msRDCInterrupt, CHANGE);
 
 	/* PID Setup */
 	LmyPID.SetMode(AUTOMATIC);
-	LmyPID.SetSampleTime(sampling_time);
-	LmyPID.SetOutputLimits( (-1 * max_speed), max_speed);
+	LmyPID.SetSampleTime(DC_PERIOD_TIME);
+	LmyPID.SetOutputLimits( (-1 * DC_SPEED), DC_SPEED);
 	RmyPID.SetMode(AUTOMATIC);
-	RmyPID.SetSampleTime(sampling_time);
-	RmyPID.SetOutputLimits( (-1 * max_speed), max_speed);
+	RmyPID.SetSampleTime(DC_PERIOD_TIME);
+	RmyPID.SetOutputLimits( (-1 * DC_SPEED), DC_SPEED);
 
 	/* pwm setup */
-	dcpwm.begin();					            /* 初期設定 (アドレス0x40用) */
+	dcPwm.begin();					            /* 初期設定 (アドレス0x40用) */
   	Wire.setClock(400000);            			/* Clock設定               */
-	dcpwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
-	dcpwm.setPWM(0, 0, 0);              		/* PWM設定                 */
+	dcPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
+	dcPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 
 	/* 進行方向の初期設定 */
-	digitalWrite( MS_DC_L_DIR_PIN, 1 ); 		/* 正転                    */
-	digitalWrite( MS_DC_R_DIR_PIN, 1 ); 		/* 正転                    */
+	digitalWrite( DC_L_DIR_PIN, 1 ); 		/* 正転                    */
+	digitalWrite( DC_R_DIR_PIN, 1 ); 		/* 正転                    */
 
 	return;
 }
@@ -143,6 +144,7 @@ void msDCInit(void)
 /* -------------------------------------------------------------------------- */
 void msDCInitRecord(DC_MNG* mng,SLNG id)
 {
+	/* 汎用初期化処理 */
 	if (mng == NULL) {
 		msLog("これもう無理やで");
 		return;
@@ -150,7 +152,7 @@ void msDCInitRecord(DC_MNG* mng,SLNG id)
 	/* １レコード初期化 */
 	mng->dcid = id;
 	mng->timerid = 0;
-	mng->busyflg = MS_DC_READY;
+	mng->busyflg = DC_READY;
 	mng->oldangles = 0;
 	return;
 }
@@ -171,16 +173,16 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 	SLNG dcIndex = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((busyflags == NULL) || (max != MS_DC_MAX)) {
+	if ((busyflags == NULL) || (max != DC_MAX)) {
 		msLog("引数エラー");
-		return MS_DC_PARAM;
+		return DC_PARAM;
 	}
 
 	/* ビジーデータコピーして返却 */
-	for (dcIndex = 0; dcIndex < MS_DC_MAX; dcIndex++) {
+	for (dcIndex = 0; dcIndex < DC_MAX; dcIndex++) {
 		busyflags[dcIndex] = dc_Mng[dcIndex].busyflg;
 	}
-	return MS_DC_OK;
+	return DC_OK;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -207,25 +209,25 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 {
 	SLNG dcCounter = 0;
-	SLNG dcRet = MS_DC_OK;
-	uint8_t speed = 0;
+	SLNG dcRet = DC_OK;
+	int  speed = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((returns == NULL) || (angles == NULL) || (max != MS_DC_MAX)) {
+	if ((returns == NULL) || (angles == NULL) || (max != DC_MAX)) {
 		msLog("引数エラー");
-		return MS_DC_PARAM;
+		return DC_PARAM;
 	}
 
 	/* DCの個数分ループして各種設定 */
-	for (dcCounter == 0; dcCounter < MS_DC_MAX; dcCounter++) {
+	for (dcCounter == 0; dcCounter < DC_MAX; dcCounter++) {
 		/* DCがビジー時は上位層の設定ミス */
-		if (dc_Mng[dcCounter].busyflg == MS_DC_BUSY) {
-			returns[dcCounter] = MS_DC_BUSY;
+		if (dc_Mng[dcCounter].busyflg == DC_BUSY) {
+			returns[dcCounter] = DC_BUSY;
 			continue;
 		}
 		/* ##要確認：DCの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[dcCounter] < MS_DC_ANG_MIN) || ((angles[dcCounter] > MS_DC_ANG_MAX) && (angles[dcCounter] != MS_DC_NOSET))) {
-			returns[dcCounter] = MS_DC_PARAM;
+		if ((angles[dcCounter] < DC_ANG_MIN) || ((angles[dcCounter] > DC_ANG_MAX) && (angles[dcCounter] != DC_NOSET))) {
+			returns[dcCounter] = DC_PARAM;
 			continue;
 		}
 		/* DCモーター設定可能と判断 --------------------------------------*/
@@ -241,13 +243,13 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			dcUD = true;						/* 正転に変更					 */
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
-		dTmpAngle = dTmpAngle * MS_DC_MOVETIME;
+		dTmpAngle = dTmpAngle * DC_MOVETIME;
 
 		/* タイマー計算＆コールバック設定 */
 		dcRet = msSetTimer(dTmpAngle, &dc_Mng[dcCounter], msDCTimerCallback);
 		if ((dcRet == MS_TIME_FULL) || (dcRet == MS_TIME_PARAM)) {
 			msLog("タイマー関連エラー: %d", dcRet);
-			return MS_DC_NG;
+			return DC_NG;
 		}
 		/* タイマーIDを保管 */
 		dc_Mng[dcCounter].timerid = dcRet;
@@ -256,37 +258,42 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		dc_Mng[dcCounter].oldangles = angles[dcCounter];
 
 		/* ##サーボモーターのレジスタ設定 */
+		/* idに合わせて変数設定 */
 		switch(dcCounter){
-		case MS_DC_L :
+		case DC_L :
+			/* PID設定 */
 			LInput 		= LAngle;
 			LSetpoint 	= dc_Mng[dcCounter].oldangles;
-			LmyPID.Compute();
-			speed = abs((int)LOutput);
-			speed = map(speed,0,MS_DC_SPEED,0,4095);
+			LmyPID.Compute();						/* PID演算 */
+			speed = abs((int)LOutput);				/* 出力値格納 */
+			speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
 			
-			if(dcUD == true) {///
-				digitalWrite(MS_DC_L_DIR_PIN,HIGH);
+			/* 方向指示 + PWM設定 */
+			if(dcUD == true) {
+				digitalWrite(DC_L_DIR_PIN,HIGH);
 				dcPwm.setPWM(dcCounter, 0, speed);
 			}else{
-				digitalWrite(MS_DC_L_DIR_PIN,LOW);
+				digitalWrite(DC_L_DIR_PIN,LOW);
 				dcPwm.setPWM(dcCounter, 0, speed);
 			}
 			/* 必要ならディレイ */
   			// delay(1);
 			break;
 
-		case MS_DC_R :
+		case DC_R :
+			/* PID設定 */
 			RInput 		= RAngle;
 			RSetpoint 	= dc_Mng[dcCounter].oldangles;
-			RmyPID.Compute();
-			speed = abs((int)ROutput);
-			speed = map(speed,0,MS_DC_SPEED,0,4095);
+			RmyPID.Compute();						/* PID演算 */
+			speed = abs((int)ROutput);				/* 出力値格納 */
+			speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
 			
+			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
-				digitalWrite(MS_DC_R_DIR_PIN,HIGH);
+				digitalWrite(DC_R_DIR_PIN,HIGH);
 				dcPwm.setPWM(dcCounter, 0, speed);
 			}else{
-				digitalWrite(MS_DC_R_DIR_PIN,LOW);
+				digitalWrite(DC_R_DIR_PIN,LOW);
 				dcPwm.setPWM(dcCounter, 0, speed);
 			}
 			/* 必要ならディレイ */
@@ -294,11 +301,11 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			break;
 
 		default:
-			printf("おかしい\n");
+			msLog("おかしい\n");
 			break;
 		}
 	}
-	return MS_DC_OK;
+	return DC_OK;
 }
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msDCTimerCallback										  */
@@ -316,10 +323,11 @@ void msDCTimerCallback(void* addr)
 	/* 該当のタイマーカット */
 	msTimeKill(ptr->timerid);
 
-	if(ptr->dcid == MS_DC_L){
-		dcPwm.setPWM(MS_DC_L_PIN, 0, 0);
+	/* PWMのカット */
+	if(ptr->dcid == DC_L){
+		dcPwm.setPWM(DC_L_PIN, 0, 0);
 	}else{
-		dcPwm.setPWM(MS_DC_R_PIN, 0, 0);
+		dcPwm.setPWM(DC_R_PIN, 0, 0);
 	}
 
 	/* 角度情報を逃がす */
@@ -344,14 +352,14 @@ void msDCTimerCallback(void* addr)
 /* -------------------------------------------------------------------------- */
 void msLDCInterrupt(){
 	/* 変化がL→Hの場合 */
-	if(digitalRead(MS_DC_L_END1_PIN) == HIGH){
-		if(digitalRead(MS_DC_L_END2_PIN) == LOW){
+	if(digitalRead(DC_L_END1_PIN) == HIGH){
+		if(digitalRead(DC_L_END2_PIN) == LOW){
 			LCount--;
 		}else{
 			LCount++;
 		}
 	}else{/* 変化がH→Lの場合 */
-		if(digitalRead(MS_DC_L_END2_PIN) == LOW){
+		if(digitalRead(DC_L_END2_PIN) == LOW){
 			LCount++;
 		}else{
 			LCount--;
@@ -359,11 +367,11 @@ void msLDCInterrupt(){
 	}
 
 	/* カウンタが分解能数に達した時=一回転 */
-	if(LCount > MS_DC_ENC_PRT){
-		LCount = LCount - MS_DC_ENC_PRT;
+	if(LCount > DC_ENC_PRT){
+		LCount = LCount - DC_ENC_PRT;
 		LAngle++;
-	}else if(LCount < -MS_DC_ENC_PRT){
-		LCount = LCount + MS_DC_ENC_PRT;
+	}else if(LCount < -DC_ENC_PRT){
+		LCount = LCount + DC_ENC_PRT;
 		LAngle++;
 	}
 }
@@ -378,14 +386,14 @@ void msLDCInterrupt(){
 /* -------------------------------------------------------------------------- */
 void msRDCInterrupt(){
 	/* 変化がL→Hの場合 */
-	if(digitalRead(MS_DC_R_END1_PIN) == HIGH){
-		if(digitalRead(MS_DC_R_END2_PIN) == LOW){
+	if(digitalRead(DC_R_END1_PIN) == HIGH){
+		if(digitalRead(DC_R_END2_PIN) == LOW){
 			RCount--;
 		}else{
 			RCount++;
 		}
 	}else{/* 変化がH→Lの場合 */
-		if(digitalRead(MS_DC_R_END2_PIN) == LOW){
+		if(digitalRead(DC_R_END2_PIN) == LOW){
 			RCount++;
 		}else{
 			RCount--;
@@ -393,11 +401,11 @@ void msRDCInterrupt(){
 	}
 
 	/* カウンタが分解能数に達した時=一回転 */
-	if(RCount > MS_DC_ENC_PRT){
-		RCount = RCount - MS_DC_ENC_PRT;
+	if(RCount > DC_ENC_PRT){
+		RCount = RCount - DC_ENC_PRT;
 		RAngle++;
-	}else if(RCount < -MS_DC_ENC_PRT){
-		RCount = RCount + MS_DC_ENC_PRT;
+	}else if(RCount < -DC_ENC_PRT){
+		RCount = RCount + DC_ENC_PRT;
 		RAngle++;
 	}
 }

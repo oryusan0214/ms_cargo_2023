@@ -17,28 +17,28 @@
 /* -------------------------------------------------------------------------- */
 /* define宣言																  */
 /* -------------------------------------------------------------------------- */
-#define MS_HAND_OK            (    0 )			/* 成功						  */
-#define MS_HAND_NG            (   -1 )			/* 失敗						  */
-#define MS_HAND_PARAM         (   -2 )			/* 引数エラー				  */
-#define MS_HAND_READY         (    0 )			/* HAND待機				  */
-#define MS_HAND_BUSY          (   -3 )			/* HANDビジー				  */
-#define MS_HAND_NOSET       ( 0xEFFF )			/* HAND設定無し			  */
-#define MS_HAND_SPEED              255            /* HANDモータの出力値              */
+#define HAND_OK            (    0 )			    /* 成功						  */
+#define HAND_NG            (   -1 )			    /* 失敗						  */
+#define HAND_PARAM         (   -2 )			    /* 引数エラー				  */
+#define HAND_READY         (    0 )			    /* HAND待機				  */
+#define HAND_BUSY          (    3 )			    /* HANDビジー				  */
+#define HAND_NOSET       ( 0xEFFF )			    /* HAND設定無し			  */
+#define HAND_SPEED              255            /* HANDモータの出力値              */
 
-#define MS_HAND_DST_MIN             0             /* HANDモータの最大距離          */
-#define MS_HAND_DST_MAX           270             /* HANDモータの最小角距離         */
+#define HAND_DST_MIN             0             /* HANDモータの最大距離          */
+#define HAND_DST_MAX           270             /* HANDモータの最小角距離         */
 
-#define MS_HAND                      3            /* HANDのID                   */
+#define HAND                      3            /* HANDのID                   */
 
-#define MS_HAND_PIN                  3            /* HANDのピン                */
-#define MS_HAND_DIR_PIN              9              /* HANDの方向ピン */
+#define HAND_PIN                  3            /* HANDのピン                */
+#define HAND_DIR_PIN              9              /* HANDの方向ピン */
 
-/* 不明 */
-#define HANDMIN                   150             /* 最小パルス幅              */
-#define HANDMAX                   600             /* 最大パルス幅              */
+#define HAND_INIT                 0              /* HANDモータの初期ステータス */
+
+#define HAND_PERIOD_TIME         25             /* PIDの周期タイム           */
 
 /* ##1度の移動時間は目検で調べるしかない */
-#define MS_HAND_MOVETIME      (  1000)			/* HANDの移動に必要な時間(ms)  */
+#define HAND_MOVETIME      (  1000)			/* HANDの移動に必要な時間(ms)  */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															  */

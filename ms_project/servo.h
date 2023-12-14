@@ -17,21 +17,20 @@
 /* -------------------------------------------------------------------------- */
 /* define宣言																  */
 /* -------------------------------------------------------------------------- */
-#define MS_SERVO_MAX          (   18 )			/* サーボ個数				  */
-#define MS_SERVO_OK           (    0 )			/* 成功						  */
-#define MS_SERVO_NG           (   -1 )			/* 失敗						  */
-#define MS_SERVO_PARAM        (   -2 )			/* 引数エラー				  */
-#define MS_SERVO_READY        (    0 )			/* サーボ待機				  */
-#define MS_SERVO_BUSY         (   -3 )			/* サーボビジー				  */
-#define MS_SERVO_NOSET      ( 0xEFFF )			/* サーボ設定無し			  */
-#define SERVOMIN 150                            /* 最小パルス幅              */
-#define SERVOMAX 600                            /* 最大パルス幅              */
+#define SERVO_MAX          (   18 )			/* サーボ個数				  */
+#define SERVO_OK           (    0 )			/* 成功						  */
+#define SERVO_NG           (   -1 )			/* 失敗						  */
+#define SERVO_PARAM        (   -2 )			/* 引数エラー				  */
+#define SERVO_READY        (    0 )			/* サーボ待機				  */
+#define SERVO_BUSY         (    3 )			/* サーボビジー				  */
+#define SERVO_NOSET      ( 0xEFFF )			/* サーボ設定無し			  */
 
-#define MS_SERVO_DST_MIN          0             /* サーボモータの最大距離      */
-#define MS_SERVO_DST_MAX        270             /* サーボモータの最小角距離     */
+#define SERVO_ANG_MIN          0            /* サーボモータの最大距離      */
+#define SERVO_ANG_MAX        180            /* サーボモータの最小角距離     */
+#define SERVO_SP_ANG_MAX     270            /* サーボモータの最小角距離     */
 
 /* ##1度の移動時間は目検で調べるしかない */
-#define MS_SERVO_MOVETIME     (   10 )			/* サーボ１度移動に必要な時間(ms) */
+#define SERVO_MOVETIME     (   10 )			/* サーボ１度移動に必要な時間(ms) */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															  */

@@ -17,36 +17,32 @@
 /* -------------------------------------------------------------------------- */
 /* define宣言																  */
 /* -------------------------------------------------------------------------- */
-#define MS_ROD_OK            (    0 )			/* 成功						  */
-#define MS_ROD_NG            (   -1 )			/* 失敗						  */
-#define MS_ROD_PARAM         (   -2 )			/* 引数エラー				  */
-#define MS_ROD_READY         (    0 )			/* サーボ待機				  */
-#define MS_ROD_BUSY          (   -3 )			/* サーボビジー				  */
-#define MS_ROD_NOSET       ( 0xEFFF )			/* サーボ設定無し			  */
-#define MS_ROD_SPEED              255            /* RODモータの出力値              */
+#define ROD_OK            (    0 )			/* 成功						  */
+#define ROD_NG            (   -1 )			/* 失敗						  */
+#define ROD_PARAM         (   -2 )			/* 引数エラー				  */
+#define ROD_READY         (    0 )			/* サーボ待機				  */
+#define ROD_BUSY          (    3 )			/* サーボビジー				  */
+#define ROD_NOSET       ( 0xEFFF )			/* サーボ設定無し			  */
+#define ROD_SPEED              255            /* RODモータの出力値              */
 
-#define MS_ROD_DST_MIN             0             /* RODモータの最大距離          */
-#define MS_ROD_DST_MAX           270             /* RODモータの最小角距離         */
+#define ROD_DST_MIN             0             /* RODモータの最大距離          */
+#define ROD_DST_MAX           270             /* RODモータの最小角距離         */
 
-#define MS_ROD                      2            /* RODのID                   */
+#define ROD                      2            /* RODのID                   */
 
-#define MS_ROD_PIN                  2            /* RODのピン                */
-#define MS_ROD_DIR_PIN              8           /* RODの方向判断 */
+#define ROD_PIN                  2            /* RODのピン                */
+#define ROD_DIR_PIN              8           /* RODの方向判断 */
 
-#define MS_ROD_ENC1_PIN            18            /* 昇降機のDCのエンコーダ用PIN1   */
-#define MS_ROD_ENC2_PIN            24            /* 昇降機のDCのエンコーダ用PIN2  */
+#define ROD_END1_PIN            18            /* 昇降機のDCのエンコーダ用PIN1   */
+#define ROD_END2_PIN            24            /* 昇降機のDCのエンコーダ用PIN2  */
 
-#define MS_ROD_INIT                 0            /* 昇降機の初期長さ       */
-#define MS_ROD_ENC_PRT            4.43            /* DCエンコの分解能          */
-
-/* 不明 */
-#define RODMIN                   150             /* 最小パルス幅              */
-#define RODMAX                   600             /* 最大パルス幅              */
+#define ROD_INIT                 0            /* 昇降機の初期長さ       */
+#define ROD_END_PRT            4.43            /* DCエンコの分解能          */
 
 #define ROD_PERIOD_TIME              25             /* PIDの周期タイム           */
 
 /* ##1度の移動時間は目検で調べるしかない */
-#define MS_ROD_MOVETIME     (   10 )			/* ROD 1 mm移動に必要な時間(ms)  */
+#define ROD_MOVETIME     (   10 )			/* ROD 1 mm移動に必要な時間(ms)  */
 
 /* -------------------------------------------------------------------------- */
 /* プロトタイプ宣言															  */
