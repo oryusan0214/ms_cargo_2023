@@ -26,7 +26,7 @@
 #define ROD_SPEED              255            /* RODモータの出力値              */
 
 #define ROD_DST_MIN             0             /* RODモータの最大距離          */
-#define ROD_DST_MAX           270             /* RODモータの最小角距離         */
+#define ROD_DST_MAX            50             /* RODモータの最小角距離         */
 
 #define ROD                      2            /* RODのID                   */
 
