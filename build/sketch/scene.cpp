@@ -17,14 +17,15 @@
 /* Scene.judge */
 /* シーンを更新するかを判断すする */
 
-void sceneInuput(Scene *scene){
+int sceneInuput(Scene *scene){
   Scene inputscene[]={
   /* --- ここからシーンを動かしていくこと ---*/
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+  {10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
   };
 
   scene = inputscene;
+  return sizeof(inputscene)/sizeof(inputscene[0]);
 }
 
 int sceneBusy(){
@@ -55,6 +56,7 @@ int scene(){
   static uint16_t scenecounter = 0;
   int returnvalue = 0;
   int sceneNext = SCENE_NG;
+  uint16_t scene_num = 0;
   Scene *scene;
 
   uint16_t angle[SERVO_NUM]=        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -64,12 +66,27 @@ int scene(){
 
   
   sceneNext = sceneBusy();//モータが動いている状態かを判断
-
+  if (scene_num == 0)
+  {
+    Serial.println("WARNING --- NON SCENE ---\n");
+    
+    return SCENE_END;
+  }
+  
   if (sceneNext == SCENE_OK)
   {
-    msLog("--- scene ---\n");
-    msLog("--now couter = %d --\n",scenecounter);
-    sceneInuput(scene);//シーンデータの取り込み
+    if (scene_num <= scenecounter)
+    {
+      return SCENE_END;
+    }
+    
+    Serial.println("--- scene ---\n");
+    
+    Serial.println("--now couter  --");
+    
+    Serial.println(scenecounter);
+    
+    scene_num=sceneInuput(scene);//シーンデータの取り込み
     //memcpy(angle,&scene[scenecounter],sizeof(angle)/sizeof(angle[0]));//servodataを抽出
     angle[0] =  scene[scenecounter].lf_neemotor;            //servodataを抽出
     angle[1] =  scene[scenecounter].lf_yaw_hipjointmotor;   //servodataを抽出
@@ -101,11 +118,16 @@ int scene(){
     msDCSet   (returnvalue,arm,ARM_NUM);//アームに指令
     msRODSet  (returnvalue,elevator);//昇降機に指令
     msHANDSet (returnvalue,handopen);//ハンド開閉に指令とエンコーダがないためbusy時間の設定
+    Serial.println(scenecounter);
+    delay(1);
     scenecounter = scenecounter + 1;//次のシーンに移る
+    return SCENE_OK;
   }
   else if (sceneNext == SCENE_NG)
   {
-    msLog("--- sceneBusy() ---\n");
+    Serial.println("--- sceneBusy() ---\n");
+    
+    return SCENE_NG;
   }
   
 

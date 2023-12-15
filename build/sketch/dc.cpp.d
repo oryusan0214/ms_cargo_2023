@@ -13,7 +13,7 @@ C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\dc.cpp.o: \
  C:\Users\yamad\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.3\cores\arduino/Stream.h \
  C:\Users\yamad\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.3\cores\arduino/USBAPI.h \
  C:\Users\yamad\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.3\cores\arduino/Arduino.h \
- C:\Users\yamad\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.3\variants\mega/pins_arduino.h \
+ C:\Users\yamad\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.3\variants\standard/pins_arduino.h \
  C:\Users\yamad\Documents\Arduino\libraries\PID-1.2.0/PID_v1.h \
  C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\time.h \
  C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\common.h \

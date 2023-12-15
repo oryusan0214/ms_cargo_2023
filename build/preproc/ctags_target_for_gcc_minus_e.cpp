@@ -19,6 +19,10 @@
 # 19 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 20 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 21 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
+# 22 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
+# 23 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
+
+# 25 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
@@ -31,9 +35,13 @@ void setup()
  //SPI.setBitOrder(MSBFIRST);
   //SPI.setDataMode(SPI_MODE2);
   //SPI.setClockDivider(SPI_CLOCK_DIV2);
-
+  msTimeInit();
+  msLogInit();
+  msServoInit();
   SPI.begin();
   digitalWrite(SS, 0x1);
+  Serial.println("System Start");
+  delay(1);
 }
 
 void loop()
@@ -53,7 +61,7 @@ void loop()
   Serial.println("--- main start ---");
 
   */
-# 49 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+# 57 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
   /*受信データを取得*/
 
   /*busy信号検出*/
@@ -64,7 +72,7 @@ void loop()
   msDCGetBusy   (armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
 
 	*/
-# 57 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+# 65 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
   /*ジャイロデータ取得*/
 
   //gyro_get(gyro_data);
@@ -75,6 +83,6 @@ void loop()
   return 0;
 
 */
-# 66 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+# 74 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
  /*main();*/
 }

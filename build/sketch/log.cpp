@@ -72,7 +72,7 @@ void msLogInit( void )
 	g_LogInitFlg = MS_LOG_INIT_FLG_ON;
 	
   /* シリアル通信の初期化 */
-  Serial.begin(9600);
+  //Serial.begin(9600);
 	return;
 }
 
@@ -130,9 +130,9 @@ void msLog( const char* Message, ... )
 	/* T.B.D. 時間計測のシステムを入れる事 ---------------------------------- */
 	/* リングバッファへ情報を格納すること */
   /* Serial.printlnのフォーマットに合わせてメモリにコピー */
-  sprintf(scStrCopy, "[%010d] %s\n", ulSystemTime, scStr);
+  //sprintf(scStrCopy, "[%010d] %s\n", ulSystemTime, scStr);
   /* 出力 */
-	Serial.println(scStrCopy);
+	Serial.println(scStr);
 
 	return;
 }

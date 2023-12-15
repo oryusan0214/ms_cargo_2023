@@ -40,6 +40,7 @@ void setup()
   SPI.begin();
   digitalWrite(SS, HIGH);
   Serial.println("System Start");
+  delay(1);
 }
 
 void loop()

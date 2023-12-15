@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 /* -------------------------------------------------------------------------- */
 /* dummy.ino																 																  */
@@ -17,29 +16,37 @@
 /* -------------------------------------------------------------------------- */
 #pragma once
 #include "common.h"
+#include "Arduino.h"
 #include "init.h"
 #include <SPI.h>
 #include "test.h"
+#include "time.h"
+#include "log.h"
+#include "servo.h"
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
 //short=2byte
 //long=4byte
 
-#line 27 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 31 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup();
-#line 38 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 46 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void loop();
-#line 27 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 31 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup()
 {
 	Serial.begin(115200);
 	//SPI.setBitOrder(MSBFIRST);
   //SPI.setDataMode(SPI_MODE2);
   //SPI.setClockDivider(SPI_CLOCK_DIV2);
-  
+  msTimeInit();
+  msLogInit();
+  msServoInit();
   SPI.begin();
   digitalWrite(SS, HIGH);
+  Serial.println("System Start");
+  delay(1);
 }
 
 void loop()

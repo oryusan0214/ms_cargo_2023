@@ -1,7 +1,6 @@
 {
     "sketch": "ms_project\\ms_project.ino",
     "output": "build",
-    "configuration": "cpu=atmega2560",
-    "board": "arduino:avr:mega",
-    "port": "COM9"
+    "board": "arduino:avr:uno",
+    "port": "COM13"
 }

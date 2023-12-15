@@ -1,0 +1,6 @@
+#line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\.vscode\\arduino.json"
+{
+    "port": "COM6",
+    "board": "arduino:avr:uno",
+    "sketch": "ms_project.ino"
+}
