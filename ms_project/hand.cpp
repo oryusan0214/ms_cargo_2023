@@ -155,7 +155,7 @@ SLNG msHANDSet(SLNG* returns, SSHT* setting)
 		return HAND_BUSY;
 	}
 	/* ##要確認：HANDの角度範囲がおかしい場合はパラメータエラー */
-	if ((*setting <false) || (true < *setting) && (*setting != HAND_NOSET)) {
+	if ((*setting <0) || (1 < *setting) && (*setting != HAND_NOSET)) {
 		return HAND_PARAM;
 	}
 	/* HANDモーター設定可能と判断 --------------------------------------*/
