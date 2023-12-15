@@ -2,18 +2,27 @@
 #include "test.h"
 extern send_data senderdata;
 extern catch_data catcherdata;
+
+typedef struct angle{
+  float xangle;
+  float yangle;
+  float zangle;
+}angle;
 int test()
 {
+  send_data* senderPdata;
   uint8_t c_test[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-  
+  angle angle_test={0,0,0};
   uint8_t *uint8_test ;
   uint8_t *uint8_test2 ;
   float f_test = 0.123456789;  
   float f_test2 = 0.123456789;
+  
   SCHR c_test_output[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   SCHR f_test_output[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   UCHR test = 0;
   UCHR transfer = 0;
+  uint16_t test2 = 0;
 
   //dummy data 作成
   senderdata.xangle = 0.123456789;
@@ -48,7 +57,15 @@ int test()
   senderdata.reservation3 = 0x12;
   
   Serial.println("\n--- START ----\n");
-  spi();
+  senderPdata=&senderdata;
+  memcpy(&angle_test,senderPdata,sizeof(angle_test));
+  Serial.println(angle_test.xangle);
+  Serial.println(angle_test.yangle);
+  Serial.println(angle_test.zangle);
+  memcpy(test2,&senderPdata->weight,sizeof(test2));
+  Serial.println(test2);
+
+  //spi();
   /*
   Serial.println("--- float ---");
   sprintf(f_test_output,"%#x%#x",f_test);

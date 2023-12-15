@@ -18,11 +18,11 @@
 #include <string.h>								/* 初期化関連				  */
 #include <stdarg.h>								/* システムログ				  */
 #include <stdlib.h>								/* メモリ操作				  */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "servo.h"								/* サーボに関わるヘッダ		  */
-#include <Wire.h>
-#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
@@ -43,7 +43,7 @@ void msServoInitRecord(SERVO_MNG* mng,SLNG id);
 /* -------------------------------------------------------------------------- */
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
-SERVO_MNG g_Mng[MS_SERVO_MAX];					/* サーボ管理データ			  */
+SERVO_MNG g_Mng[SERVO_MAX];						/* サーボ管理データ			  */
 PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
 PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
 
@@ -57,10 +57,17 @@ PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
 /* -------------------------------------------------------------------------- */
 void msServoInit(void)
 {
+	/* プログラム起動時に一度だけ走る初期化処理 */
 	SLNG slCounter = 0;
 	for (slCounter = 0; slCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); slCounter++) {
 		msServoInitRecord(&g_Mng[slCounter],slCounter);
 	}
+
+	/* PWMの設定 */
+	leftPwm.begin();
+  	leftPwm.setPWMFreq(100);
+  	rightPwm.begin();
+  	rightPwm.setPWMFreq(100);
 	return;
 }
 
@@ -74,6 +81,7 @@ void msServoInit(void)
 /* -------------------------------------------------------------------------- */
 void msServoInitRecord(SERVO_MNG* mng,SLNG id)
 {
+	/* 汎用初期化処理 */
 	if (mng == NULL) {
 		msLog("これもう無理やで");
 		return;
@@ -81,7 +89,7 @@ void msServoInitRecord(SERVO_MNG* mng,SLNG id)
 	/* １レコード初期化 */
 	mng->servoid = id;
 	mng->timerid = 0;
-	mng->busyflg = MS_SERVO_READY;
+	mng->busyflg = SERVO_READY;
 	mng->oldangles = 0;
 	return;
 }
@@ -102,16 +110,16 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 	SLNG slIndex = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((busyflags == NULL) || (max != MS_SERVO_MAX)) {
+	if ((busyflags == NULL) || (max != SERVO_MAX)) {
 		msLog("引数エラー");
-		return MS_SERVO_PARAM;
+		return SERVO_PARAM;
 	}
 
 	/* ビジーデータコピーして返却 */
-	for (slIndex = 0; slIndex < MS_SERVO_MAX; slIndex++) {
+	for (slIndex = 0; slIndex < SERVO_MAX; slIndex++) {
 		busyflags[slIndex] = g_Mng[slIndex].busyflg;
 	}
-	return MS_SERVO_OK;
+	return SERVO_OK;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -139,25 +147,25 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 {
 	SLNG slCounter	= 0;
-	SLNG slRet		= MS_SERVO_OK;
-	uint8_t slAng	= 0;
+	SLNG slRet		= SERVO_OK;
+	SINT slAng	= 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
-	if ((returns == NULL) || (angles == NULL) || (max != MS_SERVO_MAX)) {
+	if ((returns == NULL) || (angles == NULL) || (max != SERVO_MAX)) {
 		msLog("引数エラー");
-		return MS_SERVO_PARAM;
+		return SERVO_PARAM;
 	}
 
 	/* サーボの個数分ループして各種設定 */
-	for (slCounter == 0; slCounter < MS_SERVO_MAX; slCounter++) {
+	for (slCounter == 0; slCounter < SERVO_MAX; slCounter++) {
 		/* サーボがビジー時は上位層の設定ミス */
-		if (g_Mng[slCounter].busyflg == MS_SERVO_BUSY) {
-			returns[slCounter] = MS_SERVO_BUSY;
+		if (g_Mng[slCounter].busyflg == SERVO_BUSY) {
+			returns[slCounter] = SERVO_BUSY;
 			continue;
 		}
 		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[slCounter] < MS_SERVO_DST_MIN) || ((angles[slCounter] > MS_SERVO_DST_MAX) && (angles[slCounter] != MS_SERVO_NOSET))) {
-			returns[slCounter] = MS_SERVO_PARAM;
+		if ((angles[slCounter] < SERVO_ANG_MIN) || ((angles[slCounter] > SERVO_SP_ANG_MAX) && (angles[slCounter] != SERVO_NOSET))) {
+			returns[slCounter] = SERVO_PARAM;
 			continue;
 		}
 
@@ -170,34 +178,46 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 			sTmpAngle = sTmpAngle * -1;
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
-		sTmpAngle = sTmpAngle * MS_SERVO_MOVETIME;
+		sTmpAngle = sTmpAngle * SERVO_MOVETIME;
 
 		/* タイマー計算＆コールバック設定 */
 		slRet = msSetTimer(sTmpAngle, &g_Mng[slCounter], msServoTimerCallback);
 		if ((slRet == MS_TIME_FULL) || (slRet == MS_TIME_PARAM)) {
 			msLog("タイマー関連エラー: %d", slRet);
-			return MS_SERVO_NG;
+			return SERVO_NG;
 		}
 		/* タイマーIDを保管 */
 		g_Mng[slCounter].timerid = slRet;
 
 		/* 指定角度を古くしておく */
 		g_Mng[slCounter].oldangles = angles[slCounter];
+		slAng = g_Mng[slCounter].oldangles;
 
 		/* ##サーボモーターのレジスタ設定 */
 
-		/* 角度（0～270）をPWMのパルス幅（150～600）に変換 パルス幅要変更 */
-		slAng = map(g_Mng[slCounter].oldangles, MS_SERVO_DST_MIN, MS_SERVO_DST_MAX, SERVOMIN, SERVOMAX);
+		/* 角度（0～270）をPWMの1パルス幅内でのHIGHの時間(ms)に変換 */
+		/* 1,7は特殊サーボの為角度270に設定する */
+    	if(slCounter == 1 || slCounter == 7){
+      		slAng = map(g_Mng[slCounter].oldangles, 0, 270, 0, 2000);
+    	}else{
+		  	slAng = map(g_Mng[slCounter].oldangles, 0, 180, 0, 2000);
+    	}
 
-		if(slCounter < (MS_SERVO_MAX / 2) ){
+		/* 500ms - 2500msが範囲の為 +500 */
+    	slAng = slAng + 500;
+    	/* 10進数を12進数に変換（？） */
+    	slAng = map(slAng, 0, 10000, 0, 4095);
+    
+		/* idに対応したドライバにpwmセット */
+		if(slCounter < (SERVO_MAX / 2) ){
   			leftPwm.setPWM(slCounter, 0, slAng);
 		}else{
-  			rightPwm.setPWM(slCounter - (MS_SERVO_MAX / 2), 0, slAng);
+			rightPwm.setPWM(slCounter - (SERVO_MAX / 2), 0, slAng);
 		}
 		/* 必要ならディレイ */
   		// delay(1);
 	}
-	return MS_SERVO_OK;
+	return SERVO_OK;
 }
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msServoTimerCallback										  */
@@ -226,24 +246,6 @@ void msServoTimerCallback(void* addr)
 
 	return;
 }
-
-/* -------------------------------------------------------------------------- */
-/* 関数名		：msServoInterrupt											  */
-/* 機能名		：##Aruduinoから来る割り込み通知							  */
-/* 機能概要		：デューティー比の変更を行う								  */
-/* 引数			：void			 ：無し										  */
-/* 戻り値		：void			 ：無し										  */
-/* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
-/* -------------------------------------------------------------------------- */
-//void msServoInterrupt(void)
-//{
-	/* 関数名は仮なので事由にどうぞ */
-	/* ここで必要ならデューティ比を変更する */
-	/* モータードライバが全部自動てやってくれたら最高なんだけどな・・ */
-//}
-
-
-
 /* -------------------------------------------------------------------------- */
 /* 				Copyright HAL College of Technology & Design				  */
 /* -------------------------------------------------------------------------- */

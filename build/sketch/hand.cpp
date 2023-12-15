@@ -18,11 +18,13 @@
 #include <string.h>								/* 初期化関連				  */
 #include <stdarg.h>								/* システムログ				  */
 #include <stdlib.h>								/* メモリ操作				  */
-#include "time.h"								/* 時間に関するヘッダ		  */
-#include "log.h"								/* ログに関わるヘッダ		  */
-#include "hand.h"									/* HANDに関わるヘッダ		  */
+#include <stdint.h>								/* uint周り					 */
 #include <Wire.h>
 #include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
+#include <PID_v1.h>								/*  */
+#include "time.h"								/* 時間に関するヘッダ		  */
+#include "log.h"								/* ログに関わるヘッダ		  */
+#include "hand.h"								/* HANDに関わるヘッダ		  */
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
@@ -55,7 +57,21 @@ PCA9685 hPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 /* -------------------------------------------------------------------------- */
 void msHANDInit(void)
 {
+	/* プログラム起動時に一度だけ走る初期化処理 */
 	msHANDInitRecord(&h_Mng);
+
+	/* Pin Assign */
+	pinMode(HAND_PIN, OUTPUT);
+	pinMode(HAND_DIR_PIN, OUTPUT);
+
+	/* pwm setup */
+	hPwm.begin();					            /* 初期設定 (アドレス0x40用) */
+  	Wire.setClock(400000);            			/* Clock設定               */
+	hPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
+	hPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
+
+	/* 進行方向の初期設定 */
+	digitalWrite( HAND_DIR_PIN, 1 ); 		/* 正転                    */
 	
 	return;
 }
@@ -76,7 +92,7 @@ void msHANDInitRecord(HAND_MNG* mng)
 	}
 	/* １レコード初期化 */
 	mng->timerid = 0;
-	mng->busyflg = MS_HAND_READY;
+	mng->busyflg = HAND_READY;
 	mng->oldstate = 0;
 	return;
 }
@@ -96,13 +112,13 @@ SLNG msHANDGetBusy(UCHR* busyflags)
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if (busyflags == NULL) {
 		msLog("引数エラー");
-		return MS_HAND_PARAM;
+		return HAND_PARAM;
 	}
 
 	/* ビジーデータコピーして返却 */
 	*busyflags = h_Mng.busyflg;
 
-	return MS_HAND_OK;
+	return HAND_OK;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -127,21 +143,21 @@ SLNG msHANDGetBusy(UCHR* busyflags)
 /* -------------------------------------------------------------------------- */
 SLNG msHANDSet(SLNG* returns, bool setting)
 {
-	SLNG handRet = MS_HAND_OK;
+	SLNG handRet = HAND_OK;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if (returns == NULL) {
 		msLog("引数エラー");
-		return MS_HAND_PARAM;
+		return HAND_PARAM;
 	}
 
 	/* HANDがビジー時は上位層の設定ミス */
-	if (h_Mng.busyflg == MS_HAND_BUSY) {
-		*returns = MS_HAND_BUSY;
+	if (h_Mng.busyflg == HAND_BUSY) {
+		return HAND_BUSY;
 	}
 	/* ##要確認：HANDの角度範囲がおかしい場合はパラメータエラー */
-	if ((setting <false) || (true < setting) && (setting != MS_HAND_NOSET)) {
-		*returns = MS_HAND_PARAM;
+	if ((setting <false) || (true < setting) && (setting != HAND_NOSET)) {
+		return HAND_PARAM;
 	}
 	/* HANDモーター設定可能と判断 --------------------------------------*/
 
@@ -160,10 +176,10 @@ SLNG msHANDSet(SLNG* returns, bool setting)
         handUD = 2;
     }
 	/* タイマー計算＆コールバック設定 */
-	handRet = msSetTimer(MS_HAND_MOVETIME, &h_Mng, msHANDTimerCallback);
+	handRet = msSetTimer(HAND_MOVETIME, &h_Mng, msHANDTimerCallback);
 	if ((handRet == MS_TIME_FULL) || (handRet == MS_TIME_PARAM)) {
 		msLog("タイマー関連エラー: %d", handRet);
-		return MS_HAND_NG;
+		return HAND_NG;
 	}
 	/* タイマーIDを保管 */
 	h_Mng.timerid = handRet;
@@ -172,19 +188,19 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 	h_Mng.oldstate = setting;
 
 	/* ##HANDモーターのレジスタ設定 */
-	if(handUD == 0) {//
-		hPwm.setPWM(MS_HAND_PIN, 0, 0);
+	if(handUD == 0) {
+		hPwm.setPWM(HAND_PIN, 0, 0);
 	}else if(handUD == 1){
-		digitalWrite(MS_HAND_DIR_PIN,HIGH);
-		hPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
+		digitalWrite(HAND_DIR_PIN,HIGH);
+		hPwm.setPWM(HAND_PIN, 0, HAND_SPEED);
 	}else{
-        digitalWrite(MS_HAND_DIR_PIN,LOW);
-		hPwm.setPWM(MS_HAND_PIN, 0, MS_HAND_SPEED);
+        digitalWrite(HAND_DIR_PIN,LOW);
+		hPwm.setPWM(HAND_PIN, 0, HAND_SPEED);
     }
 	/* 必要ならディレイ */
   	// delay(1);
 	
-	return MS_HAND_OK;
+	return HAND_OK;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -204,7 +220,7 @@ void msHANDTimerCallback(void* addr)
 	msTimeKill(ptr->timerid);
 
 	/* モータの停止 */
-	hPwm.setPWM(MS_HAND_PIN, 0, 0);
+	hPwm.setPWM(HAND_PIN, 0, 0);
 
 	/* 角度情報を逃がす */
 	tmpDistance = ptr->oldstate;

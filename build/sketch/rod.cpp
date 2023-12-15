@@ -18,13 +18,13 @@
 #include <string.h>								/* 初期化関連				  */
 #include <stdarg.h>								/* システムログ				  */
 #include <stdlib.h>								/* メモリ操作				  */
+#include <stdint.h>								/* uint周り					 */
+#include <Wire.h>
+#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
+#include <PID_v1.h>								/*  */
 #include "time.h"								/* 時間に関するヘッダ		  */
 #include "log.h"								/* ログに関わるヘッダ		  */
 #include "rod.h"									/* RODに関わるヘッダ		  */
-#include <stdint.h>								/*  */
-#include <PID_v1.h>								/*  */
-#include <Wire.h>
-#include <PCA9685.h>                            /* PCA9685用ヘッダーファイル     */
 
 /* -------------------------------------------------------------------------- */
 /* 構造体定義（ローカル）													  */
@@ -48,6 +48,18 @@ void msRODInterrupt();
 ROD_MNG r_Mng;									/* ROD管理データ				  */
 SINT	RODAngle;								/*  */
 SINT	RODCount;
+
+double RODSetpoint, RODInput, RODOutput;     			/* PIDの関数に用いる変数L	 */
+volatile SINT	RODSpeed = 0;            			/* 出力値			       */
+
+/* Gain */
+double RODKp=4.00;
+double RODKi=0.00;
+double RODKd=0.20;
+
+/* PIDの変数宣言 */
+PID RODmyPID(&RODInput, &RODOutput, &RODSetpoint, RODKp, RODKi, RODKd, DIRECT);
+
 PCA9685 rPwm		= PCA9685(0x43);    		/* DCのI2Cアドレス		 */
 ///
 
@@ -63,13 +75,32 @@ void msRODInit(void)
 {
 	msRODInitRecord(&r_Mng);
 
-	RODAngle = MS_ROD_INIT;
+	RODAngle = ROD_INIT;
 	RODCount = 0;
+	RODInput = RODAngle;
+	RODSetpoint = 0;
 
-	pinMode(MS_ROD_ENC1_PIN, INPUT_PULLUP);
-	pinMode(MS_ROD_ENC2_PIN, INPUT_PULLUP);
+	/* Pin Assign */
+	pinMode(ROD_PIN, OUTPUT);
+	pinMode(ROD_DIR_PIN, OUTPUT);
+	pinMode(ROD_END1_PIN, INPUT);
+	pinMode(ROD_END2_PIN, INPUT);
 
-	attachInterrupt(digitalPinToInterrupt(MS_ROD_ENC1_PIN), msRODInterrupt, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(ROD_END1_PIN), msRODInterrupt, CHANGE);
+
+	/* PID Setup */
+	RODmyPID.SetMode(AUTOMATIC);
+	RODmyPID.SetSampleTime(ROD_PERIOD_TIME);
+	RODmyPID.SetOutputLimits( (-1 * ROD_SPEED), ROD_SPEED);
+
+	/* pwm setup */
+	rPwm.begin();					            /* 初期設定 (アドレス0x40用) */
+  	Wire.setClock(400000);            			/* Clock設定               */
+	rPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
+	rPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
+
+	/* 進行方向の初期設定 */
+	digitalWrite( ROD_DIR_PIN, 1 ); 		/* 正転                    */
 	
 	return;
 }
@@ -90,7 +121,7 @@ void msRODInitRecord(ROD_MNG* mng)
 	}
 	/* １レコード初期化 */
 	mng->timerid = 0;
-	mng->busyflg = MS_ROD_READY;
+	mng->busyflg = ROD_READY;
 	mng->olddistance = 0;
 	return;
 }
@@ -110,13 +141,13 @@ SLNG msRODGetBusy(UCHR* busyflags)
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if (busyflags == NULL) {
 		msLog("引数エラー");
-		return MS_ROD_PARAM;
+		return ROD_PARAM;
 	}
 
 	/* ビジーデータコピーして返却 */
 	*busyflags = r_Mng.busyflg;
 
-	return MS_ROD_OK;
+	return ROD_OK;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -141,21 +172,22 @@ SLNG msRODGetBusy(UCHR* busyflags)
 /* -------------------------------------------------------------------------- */
 SLNG msRODSet(SLNG* returns, SSHT* distance)
 {
-	SLNG rodRet = MS_ROD_OK;
+	SLNG rodRet = ROD_OK;
+	int speed = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (distance == NULL)) {
 		msLog("引数エラー");
-		return MS_ROD_PARAM;
+		return ROD_PARAM;
 	}
 
 	/* RODがビジー時は上位層の設定ミス */
-	if (r_Mng.busyflg == MS_ROD_BUSY) {
-		*returns = MS_ROD_BUSY;
+	if (r_Mng.busyflg == ROD_BUSY) {
+		*returns = ROD_BUSY;
 	}
 	/* ##要確認：RODの角度範囲がおかしい場合はパラメータエラー */
-	if ((*distance < MS_ROD_DST_MIN) || ((*distance > MS_ROD_DST_MAX) && (*distance != MS_ROD_NOSET))) {
-		*returns = MS_ROD_PARAM;
+	if ((*distance < ROD_DST_MIN) || ((*distance > ROD_DST_MAX) && (*distance != ROD_NOSET))) {
+		*returns = ROD_PARAM;
 	}
 	/* RODモーター設定可能と判断 --------------------------------------*/
 
@@ -170,13 +202,13 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 		rodUD = true;						/* 正転に変更					 */
 	}
 	/* ##define値を確認 移動予定角度から時間へ変換 */
-	dTmpDistance = dTmpDistance * MS_ROD_MOVETIME;
+	dTmpDistance = dTmpDistance * ROD_MOVETIME;
 
 	/* タイマー計算＆コールバック設定 */
 	rodRet = msSetTimer(dTmpDistance, &r_Mng, msRODTimerCallback);
 	if ((rodRet == MS_TIME_FULL) || (rodRet == MS_TIME_PARAM)) {
 		msLog("タイマー関連エラー: %d", rodRet);
-		return MS_ROD_NG;
+		return ROD_NG;
 	}
 	/* タイマーIDを保管 */
 	r_Mng.timerid = rodRet;
@@ -185,17 +217,25 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 	r_Mng.olddistance = *distance;
 
 	/* ##サーボモーターのレジスタ設定 */
+	/* PID設定 */
+	RODInput 		= RODAngle;
+	RODSetpoint 	= r_Mng.olddistance;
+	RODmyPID.Compute();						/* PID演算 */
+	speed = abs((int)RODOutput);				/* 出力値格納 */
+	speed = map(speed,0,ROD_SPEED,0,4095);/* パルス幅の値に変換 */
+			
+	/* 方向指示 + PWM設定 */
 	if(rodUD == true) {
-		digitalWrite(MS_ROD_DIR_PIN,HIGH);
-		rPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
+		digitalWrite(ROD_DIR_PIN,HIGH);
+		rPwm.setPWM(ROD_PIN, 0, speed);
 	}else{
-		digitalWrite(MS_ROD_DIR_PIN,LOW);
-		rPwm.setPWM(MS_ROD_PIN, 0, MS_ROD_SPEED);
+		digitalWrite(ROD_DIR_PIN,LOW);
+		rPwm.setPWM(ROD_PIN, 0, speed);
 	}
 	/* 必要ならディレイ */
   	// delay(1);
 	
-	return MS_ROD_OK;
+	return ROD_OK;
 }
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msRODTimerCallback										  */
@@ -213,7 +253,7 @@ void msRODTimerCallback(void* addr)
 	/* 該当のタイマーカット */
 	msTimeKill(ptr->timerid);
 
-	rPwm.setPWM(MS_ROD_PIN, 0, 0);
+	rPwm.setPWM(ROD_PIN, 0, 0);
 
 	/* 角度情報を逃がす */
 	tmpDistance = ptr->olddistance;
@@ -237,14 +277,14 @@ void msRODTimerCallback(void* addr)
 /* -------------------------------------------------------------------------- */
 void msRODInterrupt(){
 	/* 変化がL→Hの場合 */
-	if(digitalRead(MS_ROD_ENC1_PIN) == HIGH){
-		if(digitalRead(MS_ROD_ENC2_PIN) == LOW){
+	if(digitalRead(ROD_END1_PIN) == HIGH){
+		if(digitalRead(ROD_END2_PIN) == LOW){
 			RODCount--;
 		}else{
 			RODCount++;
 		}
 	}else{/* 変化がH→Lの場合 */
-		if(digitalRead(MS_ROD_ENC2_PIN) == LOW){
+		if(digitalRead(ROD_END2_PIN) == LOW){
 			RODCount++;
 		}else{
 			RODCount--;
@@ -252,11 +292,11 @@ void msRODInterrupt(){
 	}
 
 	/* カウンタが分解能数に達した時=一回転 */
-	if(RODCount > MS_ROD_ENC_PRT){
-		RODCount = RODCount - MS_ROD_ENC_PRT;
+	if(RODCount > ROD_END_PRT){
+		RODCount = RODCount - ROD_END_PRT;
 		RODAngle++;
-	}else if(RODCount < -MS_ROD_ENC_PRT){
-		RODCount = RODCount + MS_ROD_ENC_PRT;
+	}else if(RODCount < -ROD_END_PRT){
+		RODCount = RODCount + ROD_END_PRT;
 		RODAngle++;
 	}
 }
