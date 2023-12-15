@@ -174,7 +174,7 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((busyflags == NULL) || (max != DC_MAX)) {
-		msLog("引数エラー");
+		msLog("引数エラー１");
 		return DC_PARAM;
 	}
 
@@ -214,7 +214,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != DC_MAX)) {
-		msLog("引数エラー");
+		msLog("引数エラー２");
 		return DC_PARAM;
 	}
 
@@ -251,6 +251,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			msLog("タイマー関連エラー: %d", dcRet);
 			return DC_NG;
 		}
+		dc_Mng[dcCounter].busyflg = DC_BUSY;
 		/* タイマーIDを保管 */
 		dc_Mng[dcCounter].timerid = dcRet;
 
