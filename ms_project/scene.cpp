@@ -16,7 +16,7 @@
 /* Scene.judge */
 /* シーンを更新するかを判断すする */
 
-void sceneInuput(Scene *scene){
+int sceneInuput(Scene *scene){
   Scene inputscene[]={
   /* --- ここからシーンを動かしていくこと ---*/
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -24,6 +24,7 @@ void sceneInuput(Scene *scene){
   };
 
   scene = inputscene;
+  return sizeof(inputscene)/sizeof(inputscene[0]);
 }
 
 int sceneBusy(){
@@ -54,6 +55,7 @@ int scene(){
   static uint16_t scenecounter = 0;
   int returnvalue = 0;
   int sceneNext = SCENE_NG;
+  uint16_t scene_num = 0;
   Scene *scene;
 
   uint16_t angle[SERVO_NUM]=        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -63,12 +65,22 @@ int scene(){
 
   
   sceneNext = sceneBusy();//モータが動いている状態かを判断
-
+  if (scene_num == 0)
+  {
+    msLog("WARNING --- NON SCENE ---\n");
+    return SCENE_MAX;
+  }
+  
   if (sceneNext == SCENE_OK)
   {
+    if (scene_num <= scenecounter)
+    {
+      return SCENE_END;
+    }
+    
     msLog("--- scene ---\n");
     msLog("--now couter = %d --\n",scenecounter);
-    sceneInuput(scene);//シーンデータの取り込み
+    scene_num=sceneInuput(scene);//シーンデータの取り込み
     //memcpy(angle,&scene[scenecounter],sizeof(angle)/sizeof(angle[0]));//servodataを抽出
     angle[0] =  scene[scenecounter].lf_neemotor;            //servodataを抽出
     angle[1] =  scene[scenecounter].lf_yaw_hipjointmotor;   //servodataを抽出
@@ -101,10 +113,12 @@ int scene(){
     msRODSet  (returnvalue,elevator);//昇降機に指令
     msHANDSet (returnvalue,handopen);//ハンド開閉に指令とエンコーダがないためbusy時間の設定
     scenecounter = scenecounter + 1;//次のシーンに移る
+    return SCENE_OK;
   }
   else if (sceneNext == SCENE_NG)
   {
     msLog("--- sceneBusy() ---\n");
+    return SCENE_NG;
   }
   
 

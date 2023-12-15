@@ -9,6 +9,8 @@ typedef struct angle{
 }angle;
 int test()
 {
+  scene();
+  /*
   send_data* senderPdata;
   uint8_t c_test[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   angle angle_test={0,0,0};
@@ -23,7 +25,9 @@ int test()
   UCHR transfer = 0;
   uint16_t test2 = 0;
 
+  */
   //dummy data 作成
+  /*
   senderdata.xangle = 0.123456789;
   senderdata.yangle = 0.123456789;
   senderdata.zangle = 0.123456789;
@@ -55,7 +59,10 @@ int test()
   senderdata.reservation2 = 0x12;
   senderdata.reservation3 = 0x12;
   
-  Serial.println("\n--- START ----\n");
+  */
+  Serial.println("\n--- TEST START ----\n");
+  
+  /*
   senderPdata=&senderdata;
   memcpy(&angle_test,senderPdata,sizeof(angle_test));
   Serial.println(angle_test.xangle);
@@ -63,6 +70,7 @@ int test()
   Serial.println(angle_test.zangle);
   memcpy(test2,&senderPdata->weight,sizeof(test2));
   Serial.println(test2);
+  */
 
   //spi();
   /*
