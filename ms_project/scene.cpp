@@ -93,9 +93,9 @@ int scene(){
     arm[0]=scene[scenecounter].l_armmotor;                  //armdataを抽出
     arm[1]=scene[scenecounter].r_armmotor;                  //armdataを抽出
 
-    elevator=scene[scenecounter].elevator;                  //elevatordataを抽出
-    
-    handopen=scene[scenecounter].hand;                      //handopendataを抽出
+    elevator[0]=scene[scenecounter].elevator;                  //elevatordataを抽出
+
+    handopen[0]=scene[scenecounter].hand;                      //handopendataを抽出
     msServoSet(returnvalue,angle,SERVO_NUM);//サーボに指令とエンコーダがないためbusy時間の設定
     msDCSet   (returnvalue,arm,ARM_NUM);//アームに指令
     msRODSet  (returnvalue,elevator);//昇降機に指令

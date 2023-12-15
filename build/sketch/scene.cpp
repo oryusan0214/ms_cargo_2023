@@ -70,10 +70,33 @@ int scene(){
     msLog("--- scene ---\n");
     msLog("--now couter = %d --\n",scenecounter);
     sceneInuput(scene);//シーンデータの取り込み
-    memcpy(angle,&scene[scenecounter],sizeof(angle)/sizeof(angle[0]));//servodataを抽出
-    memcpy(arm,scene[scenecounter].l_armmotor,sizeof(arm)/sizeof(arm[0]));//armdataを抽出
-    memcpy(elevator,scene[scenecounter].elevator,sizeof(elevator)/sizeof(elevator[0]));//elevatordataを抽出
-    memcpy(handopen,scene[scenecounter].hand,sizeof(handopen)/sizeof(handopen[0]));//handopendataを抽出
+    //memcpy(angle,&scene[scenecounter],sizeof(angle)/sizeof(angle[0]));//servodataを抽出
+    angle[0] =  scene[scenecounter].lf_neemotor;            //servodataを抽出
+    angle[1] =  scene[scenecounter].lf_yaw_hipjointmotor;   //servodataを抽出
+    angle[2] =  scene[scenecounter].lf_pitch_hipjointmotor; //servodataを抽出
+    angle[3] =  scene[scenecounter].lc_neemotor;            //servodataを抽出
+    angle[4] =  scene[scenecounter].lc_yaw_hipjointmotor;   //servodataを抽出
+    angle[5] =  scene[scenecounter].lc_pitch_hipjointmotor; //servodataを抽出
+    angle[6] =  scene[scenecounter].lb_kneemotor;           //servodataを抽出
+    angle[7] =  scene[scenecounter].lb_yaw_hipjointmotor;   //servodataを抽出
+    angle[8] =  scene[scenecounter].lb_pitch_hipjointmotor; //servodataを抽出
+    angle[9] =  scene[scenecounter].rf_neemotor;            //servodataを抽出
+    angle[10] = scene[scenecounter].rf_yaw_hipjointmotor;   //servodataを抽出
+    angle[11] = scene[scenecounter].rf_pitch_hipjointmotor; //servodataを抽出
+    angle[12] = scene[scenecounter].rc_neemotor;            //servodataを抽出
+    angle[13] = scene[scenecounter].rc_yaw_hipjointmotor;   //servodataを抽出
+    angle[14] = scene[scenecounter].rc_pitch_hipjointmotor; //servodataを抽出
+    angle[15] = scene[scenecounter].rb_kneemotor;           //servodataを抽出
+    angle[16] = scene[scenecounter].rb_yaw_hipjointmotor;   //servodataを抽出
+    angle[17] = scene[scenecounter].rb_pitch_hipjointmotor; //servodataを抽出
+
+    //memcpy(arm,scene[scenecounter].l_armmotor,sizeof(arm)/sizeof(arm[0]));
+    arm[0]=scene[scenecounter].l_armmotor;                  //armdataを抽出
+    arm[1]=scene[scenecounter].r_armmotor;                  //armdataを抽出
+
+    elevator[0]=scene[scenecounter].elevator;                  //elevatordataを抽出
+
+    handopen[0]=scene[scenecounter].hand;                      //handopendataを抽出
     msServoSet(returnvalue,angle,SERVO_NUM);//サーボに指令とエンコーダがないためbusy時間の設定
     msDCSet   (returnvalue,arm,ARM_NUM);//アームに指令
     msRODSet  (returnvalue,elevator);//昇降機に指令
