@@ -20,7 +20,7 @@ int sceneInuput(Scene *scene){
   Scene inputscene[]={
   /* --- ここからシーンを動かしていくこと ---*/
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+  {10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
   };
 
   scene = inputscene;
@@ -68,7 +68,7 @@ int scene(){
   if (scene_num == 0)
   {
     msLog("WARNING --- NON SCENE ---\n");
-    return SCENE_MAX;
+    return SCENE_END;
   }
   
   if (sceneNext == SCENE_OK)
@@ -112,6 +112,7 @@ int scene(){
     msDCSet   (returnvalue,arm,ARM_NUM);//アームに指令
     msRODSet  (returnvalue,elevator);//昇降機に指令
     msHANDSet (returnvalue,handopen);//ハンド開閉に指令とエンコーダがないためbusy時間の設定
+    Serial.println(scenecounter);
     scenecounter = scenecounter + 1;//次のシーンに移る
     return SCENE_OK;
   }

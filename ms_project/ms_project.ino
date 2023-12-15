@@ -15,9 +15,13 @@
 /* -------------------------------------------------------------------------- */
 #pragma once
 #include "common.h"
+#include "Arduino.h"
 #include "init.h"
 #include <SPI.h>
 #include "test.h"
+#include "time.h"
+#include "log.h"
+#include "servo.h"
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
@@ -30,9 +34,12 @@ void setup()
 	//SPI.setBitOrder(MSBFIRST);
   //SPI.setDataMode(SPI_MODE2);
   //SPI.setClockDivider(SPI_CLOCK_DIV2);
-  
+  msTimeInit();
+  msLogInit();
+  msServoInit();
   SPI.begin();
   digitalWrite(SS, HIGH);
+  Serial.println("System Start");
 }
 
 void loop()

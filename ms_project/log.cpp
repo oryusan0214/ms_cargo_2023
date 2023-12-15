@@ -71,7 +71,7 @@ void msLogInit( void )
 	g_LogInitFlg = MS_LOG_INIT_FLG_ON;
 	
   /* シリアル通信の初期化 */
-  Serial.begin(9600);
+  //Serial.begin(9600);
 	return;
 }
 
