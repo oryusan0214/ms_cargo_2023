@@ -123,6 +123,10 @@ void msDCInit(void)
 
 	/* pwm setup */
 	dcPwm.begin();					            /* 初期設定 (アドレス0x40用) */
+  	PinMode(SDA,INPUT);
+	PinMode(SCL,INPUT);
+	Wire.setClock(200000);            			/* Clock設定               */
+	
 		pinMode(SDA,INPUT);
     pinMode(SCL,INPUT);
     Wire.setClock(200000);                      /* Clock設定               */

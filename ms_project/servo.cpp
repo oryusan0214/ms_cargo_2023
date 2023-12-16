@@ -44,7 +44,10 @@ void msServoInitRecord(SERVO_MNG* mng,SLNG id);
 /* -------------------------------------------------------------------------- */
 SERVO_MNG g_Mng[SERVO_MAX];						/* サーボ管理データ			  */
 PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
+PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
 PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
+uint16_t ang_min[SERVO_MAX] = {125,45,65,125,10,86,125,45,50,125,10,50,125,10,75,125,10,60};
+uint16_t ang_max[SERVO_MAX] = {180,70,135,180,37,110,180,70,120,180,50,120,180,30,105,135,40,90};
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msServoInit												  */
@@ -63,6 +66,13 @@ void msServoInit(void)
 	}
 
 	/* PWMの設定 */
+	leftPwm.begin();
+  	rightPwm.begin();
+
+	PinMode(SDA,INPUT);
+	PinMode(SCL,INPUT);
+	Wire.setClock(200000);            			/* Clock設定               */
+
 		leftPwm.begin();
   	rightPwm.begin();
 		pinMode(SDA,INPUT);
@@ -84,7 +94,7 @@ void msServoInit(void)
 void msServoInitRecord(SERVO_MNG* mng,SLNG id)
 {
 	/* 汎用初期化処理 */
-	if (mng == NULL) {
+	if (mng == NULL || id < 0 || SERVO_MAX <= id) {
 		msLog("これもう無理やで");
 		return;
 	}
@@ -119,8 +129,8 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 
 	/* ビジーデータコピーして返却 */
 	for (slIndex = 0; slIndex < SERVO_MAX; slIndex++) {
-		Serial.println("busy base");
-    	Serial.println(g_Mng[slIndex].busyflg);
+		//Serial.println("busy base");
+    	//Serial.println(g_Mng[slIndex].busyflg);
 		busyflags[slIndex] = g_Mng[slIndex].busyflg;
 	}
 	return SERVO_OK;
@@ -153,13 +163,13 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 	SLNG slCounter	= 0;
 	SLNG slRet		= SERVO_OK;
 	SINT slAng	= 0;
-	Serial.println("--- (1) ---\n");
+	//Serial.println("--- (1) ---\n");
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != SERVO_MAX)) {
 		msLog("引数エラー７");
 		return SERVO_PARAM;
 	}
-	Serial.println("--- (2) ---\n");
+	//Serial.println("--- (2) ---\n");
 	/* サーボの個数分ループして各種設定 */
 	for (slCounter == 0; slCounter < SERVO_MAX; slCounter++) {
 		/* サーボがビジー時は上位層の設定ミス */
@@ -169,14 +179,14 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 			continue;
 		}
 		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
-		if ((angles[slCounter] < SERVO_ANG_MIN) || ((angles[slCounter] > SERVO_SP_ANG_MAX) && (angles[slCounter] != SERVO_NOSET))) {
+		if ((angles[slCounter] < ang_min[slCounter]) || ((angles[slCounter] > ang_max[slCounter]) && (angles[slCounter] != SERVO_NOSET))) {
 			Serial.println("--- (9) ---\n");
 			Serial.println(slCounter);
 			Serial.println(angles[slCounter]);
 			returns[slCounter] = SERVO_PARAM;
 			continue;
 		}
-		Serial.println("--- (3) ---\n");
+		//Serial.println("--- (3) ---\n");
 		/* サーボモーター設定可能と判断 --------------------------------------*/
 		/* 指定角度からサーボ移動に必要な時間を算出 */
 		SSHT sTmpAngle = 0;
@@ -187,7 +197,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
 		sTmpAngle = sTmpAngle * SERVO_MOVETIME;
-		Serial.println("--- (4) ---\n");
+		//Serial.println("--- (4) ---\n");
 		if(sTmpAngle == 0){
 			sTmpAngle++;
 		}
@@ -208,7 +218,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		slAng = g_Mng[slCounter].oldangles;
 
 		/* ##サーボモーターのレジスタ設定 */
-		Serial.println("--- (5) ---\n");
+		//Serial.println("--- (5) ---\n");
 		/* 角度（0～270）をPWMの1パルス幅内でのHIGHの時間(ms)に変換 */
 		/* 1,7は特殊サーボの為角度270に設定する */
     	if(slCounter == 1 || slCounter == 7){
@@ -216,7 +226,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
     	}else{
 		  	slAng = map(g_Mng[slCounter].oldangles, 0, 180, 0, 2000);
     	}
-		Serial.println("--- (6) ---\n");
+		//Serial.println("--- (6) ---\n");
 		/* 500ms - 2500msが範囲の為 +500 */
     	slAng = slAng + 500;
     	/* 10進数を12進数に変換（？） */
@@ -228,7 +238,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		}else{
 			rightPwm.setPWM(slCounter - (SERVO_MAX / 2), 0, slAng);
 		}
-		Serial.println("--- (7) ---\n");
+		//Serial.println("--- (7) ---\n");
 		/* 必要ならディレイ */
   		// delay(1);
 	}

@@ -65,10 +65,9 @@ void msHANDInit(void)
 
 	/* pwm setup */
 	hPwm.begin();					            /* 初期設定 (アドレス0x40用) */
-  	pinMode(SDA,INPUT);
-    pinMode(SCL,INPUT);
-    Wire.setClock(200000);                      /* Clock設定               */
-
+  	PinMode(SDA,INPUT);
+	PinMode(SCL,INPUT);
+	Wire.setClock(200000);            			/* Clock設定               */
 	hPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	hPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 
@@ -158,7 +157,7 @@ SLNG msHANDSet(SLNG* returns, SSHT* setting)
 		return HAND_BUSY;
 	}
 	/* ##要確認：HANDの角度範囲がおかしい場合はパラメータエラー */
-	if ((*setting <false) || (true < *setting) && (*setting != HAND_NOSET)) {
+	if ((*setting <0) || (1 < *setting) && (*setting != HAND_NOSET)) {
 		return HAND_PARAM;
 	}
 	/* HANDモーター設定可能と判断 --------------------------------------*/

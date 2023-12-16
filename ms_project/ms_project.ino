@@ -46,6 +46,7 @@ void setup()
 void loop()
 {
 	test();
+  msTimeCallbackExecute();
 	//Serial.println("loop");
 	/*
 	UCHR legbusy[18]={0};

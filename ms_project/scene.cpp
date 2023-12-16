@@ -17,11 +17,22 @@
 
 volatile static Scene inputscene[]={
   /* --- ここからシーンを動かしていくこと ---*/
-  {140,2,3,4,5,6,7,8,9,140,35,50,13,14,15,160,17,18,19,20,21,22},
-  {115,2,3,4,5,6,7,8,9,140,35,90,13,14,15,160,17,18,19,20,21,22},
-  {140,2,3,4,5,6,7,8,9,140,35,50,13,14,15,160,17,18,19,20,21,22},
-  {115,2,3,4,5,6,7,8,9,140,35,90,13,14,15,160,17,18,19,20,21,22}
-
+  {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,160,17,18,19,20,21,22},
+  {10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10},
+  {20,40,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20},
+  {30,70,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {40,120,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {50,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {60,50,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {70,70,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {80,2,3,4,5,6,7,8,9,10,11,12,13,14,15,160,17,18,19,20,21,22},
+  {90,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10},
+  {100,24,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20},
+  {110,150,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {120,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {130,20,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {140,130,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
+  {150,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},
   };
 
 /* Scene.judge */
@@ -50,8 +61,8 @@ int sceneBusy(){
 
   msServoGetBusy(legbusy,sizeof(legbusy)/sizeof(legbusy[0]));
   for(int i = 0;i < SERVO_MAX;i++){
-    Serial.println("busy");
-    Serial.println(legbusy[i]);
+    //Serial.println("busy");
+    //Serial.println(legbusy[i]);
   }
   //msDCGetBusy(armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
   //msRODGetBusy(&elevatorbusy);
@@ -83,7 +94,7 @@ int scene(){
 
   
   sceneNext = sceneBusy();//モータが動いている状態かを判断
-  msTimeCallbackExecute();
+ 
   
 
   if (sceneNext == SCENE_OK)
@@ -114,23 +125,23 @@ int scene(){
   
     //memcpy(angle,&scene[scenecounter],sizeof(angle)/sizeof(angle[0]));//servodataを抽出
     angle[0] =  scene[scenecounter].lf_neemotor;            //servodataを抽出
-    angle[1] =  scene[scenecounter].lf_pitch_hipjointmotor;   //servodataを抽出
-    angle[2] =  scene[scenecounter].lf_yaw_hipjointmotor; //servodataを抽出
+    angle[1] =  scene[scenecounter].lf_pitch_hipjointmotor; //servodataを抽出
+    angle[2] =  scene[scenecounter].lf_yaw_hipjointmotor;   //servodataを抽出
     angle[3] =  scene[scenecounter].lc_neemotor;            //servodataを抽出
-    angle[4] =  scene[scenecounter].lc_pitch_hipjointmotor;   //servodataを抽出
-    angle[5] =  scene[scenecounter].lc_yaw_hipjointmotor; //servodataを抽出
+    angle[4] =  scene[scenecounter].lc_pitch_hipjointmotor; //servodataを抽出
+    angle[5] =  scene[scenecounter].lc_yaw_hipjointmotor;   //servodataを抽出
     angle[6] =  scene[scenecounter].lb_kneemotor;           //servodataを抽出
-    angle[7] =  scene[scenecounter].lb_pitch_hipjointmotor;   //servodataを抽出
-    angle[8] =  scene[scenecounter].lb_yaw_hipjointmotor; //servodataを抽出
+    angle[7] =  scene[scenecounter].lb_pitch_hipjointmotor; //servodataを抽出
+    angle[8] =  scene[scenecounter].lb_yaw_hipjointmotor;   //servodataを抽出
     angle[9] =  scene[scenecounter].rf_neemotor;            //servodataを抽出
-    angle[10] = scene[scenecounter].rf_pitch_hipjointmotor;   //servodataを抽出
-    angle[11] = scene[scenecounter].rf_yaw_hipjointmotor; //servodataを抽出
+    angle[10] = scene[scenecounter].rf_pitch_hipjointmotor; //servodataを抽出
+    angle[11] = scene[scenecounter].rf_yaw_hipjointmotor;   //servodataを抽出
     angle[12] = scene[scenecounter].rc_neemotor;            //servodataを抽出
-    angle[13] = scene[scenecounter].rc_pitch_hipjointmotor;   //servodataを抽出
-    angle[14] = scene[scenecounter].rc_yaw_hipjointmotor; //servodataを抽出
+    angle[13] = scene[scenecounter].rc_pitch_hipjointmotor; //servodataを抽出
+    angle[14] = scene[scenecounter].rc_yaw_hipjointmotor;   //servodataを抽出
     angle[15] = scene[scenecounter].rb_kneemotor;           //servodataを抽出
-    angle[16] = scene[scenecounter].rb_pitch_hipjointmotor;   //servodataを抽出
-    angle[17] = scene[scenecounter].rb_yaw_hipjointmotor; //servodataを抽出
+    angle[16] = scene[scenecounter].rb_pitch_hipjointmotor; //servodataを抽出
+    angle[17] = scene[scenecounter].rb_yaw_hipjointmotor;   //servodataを抽出
     Serial.println("-----------ang koko --------------");
     Serial.println(scenecounter);
     Serial.println(angle[16]);
