@@ -46,7 +46,7 @@ void msServoInitRecord(SERVO_MNG* mng,SLNG id);
 SERVO_MNG g_Mng[SERVO_MAX];						/* サーボ管理データ			  */
 PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
 PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
-uint16_t ang_min[SERVO_MAX] = {115,40,65,125,10,80,125,45,44,120,10,50,125,10,75,115,10,60};
+uint16_t ang_min[SERVO_MAX] = {115,40,65,125,0,80,125,40,44,120,10,50,125,5,75,115,10,60};
 uint16_t ang_max[SERVO_MAX] = {180,82,140,180,37,110,180,82,120,180,50,120,180,35,105,180,43,132};
 uint16_t ang_ini[SERVO_MAX] = {140,70,140,140,35,95,145,70,44,140,35,50,140,35,90,140,35,132};
 
