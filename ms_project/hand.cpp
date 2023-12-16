@@ -65,7 +65,10 @@ void msHANDInit(void)
 
 	/* pwm setup */
 	hPwm.begin();					            /* 初期設定 (アドレス0x40用) */
-  	Wire.setClock(400000);            			/* Clock設定               */
+  	pinMode(SDA,INPUT);
+    pinMode(SCL,INPUT);
+    Wire.setClock(200000);                      /* Clock設定               */
+
 	hPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	hPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 

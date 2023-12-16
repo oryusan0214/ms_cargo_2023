@@ -66,7 +66,10 @@ void msHANDInit(void)
 
 	/* pwm setup */
 	hPwm.begin();					            /* 初期設定 (アドレス0x40用) */
-  	Wire.setClock(400000);            			/* Clock設定               */
+  	pinMode(SDA,INPUT);
+    pinMode(SCL,INPUT);
+    Wire.setClock(200000);                      /* Clock設定               */
+
 	hPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	hPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 
@@ -111,7 +114,7 @@ SLNG msHANDGetBusy(UCHR* busyflags)
 {
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if (busyflags == NULL) {
-		msLog("引数エラー");
+		msLog("");
 		return HAND_PARAM;
 	}
 
@@ -141,13 +144,13 @@ SLNG msHANDGetBusy(UCHR* busyflags)
 /*				：必ずチェックする事！										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-SLNG msHANDSet(SLNG* returns, bool setting)
+SLNG msHANDSet(SLNG* returns, SSHT* setting)
 {
 	SLNG handRet = HAND_OK;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if (returns == NULL) {
-		msLog("引数エラー");
+		msLog("引数エラー３");
 		return HAND_PARAM;
 	}
 
@@ -156,7 +159,7 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 		return HAND_BUSY;
 	}
 	/* ##要確認：HANDの角度範囲がおかしい場合はパラメータエラー */
-	if ((setting <false) || (true < setting) && (setting != HAND_NOSET)) {
+	if ((*setting <false) || (true < *setting) && (*setting != HAND_NOSET)) {
 		return HAND_PARAM;
 	}
 	/* HANDモーター設定可能と判断 --------------------------------------*/
@@ -168,9 +171,9 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 
     /* 開閉方向判断 */
 	/* 同じ→変化なし(1)、Low → High 開く(1)、High → Low 閉じる(2) */
-    if(h_Mng.oldstate == setting){
+    if(h_Mng.oldstate == *setting){
         handUD = 0;
-    }else if(h_Mng.oldstate < setting){
+    }else if(h_Mng.oldstate < *setting){
         handUD = 1;
     }else{
         handUD = 2;
@@ -181,11 +184,12 @@ SLNG msHANDSet(SLNG* returns, bool setting)
 		msLog("タイマー関連エラー: %d", handRet);
 		return HAND_NG;
 	}
+	h_Mng.busyflg = HAND_BUSY;
 	/* タイマーIDを保管 */
 	h_Mng.timerid = handRet;
 
 	/* 指定角度を古くしておく */
-	h_Mng.oldstate = setting;
+	h_Mng.oldstate = *setting;
 
 	/* ##HANDモーターのレジスタ設定 */
 	if(handUD == 0) {

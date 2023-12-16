@@ -124,7 +124,10 @@ void msDCInit(void)
 
 	/* pwm setup */
 	dcPwm.begin();					            /* 初期設定 (アドレス0x40用) */
-  	Wire.setClock(400000);            			/* Clock設定               */
+		pinMode(SDA,INPUT);
+    pinMode(SCL,INPUT);
+    Wire.setClock(200000);                      /* Clock設定               */
+
 	dcPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	dcPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 
@@ -175,7 +178,7 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((busyflags == NULL) || (max != DC_MAX)) {
-		msLog("引数エラー");
+		msLog("引数エラー１");
 		return DC_PARAM;
 	}
 
@@ -215,7 +218,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != DC_MAX)) {
-		msLog("引数エラー");
+		msLog("引数エラー２");
 		return DC_PARAM;
 	}
 
@@ -252,6 +255,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			msLog("タイマー関連エラー: %d", dcRet);
 			return DC_NG;
 		}
+		dc_Mng[dcCounter].busyflg = DC_BUSY;
 		/* タイマーIDを保管 */
 		dc_Mng[dcCounter].timerid = dcRet;
 
