@@ -43,7 +43,7 @@ void msServoInitRecord(SERVO_MNG* mng,SLNG id);
 /* グローバル変数宣言														  */
 /* -------------------------------------------------------------------------- */
 SERVO_MNG g_Mng[SERVO_MAX];						/* サーボ管理データ			  */
-PCA9685 leftPwm		= PCA9685(0x40);    		/* 左サーボのI2Cアドレス		 */
+PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
 PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
 uint16_t ang_min[SERVO_MAX] = {125,45,65,125,10,86,125,45,50,125,10,50,125,10,75,125,10,60};
 uint16_t ang_max[SERVO_MAX] = {180,70,135,180,37,110,180,70,120,180,50,120,180,30,105,135,40,90};
@@ -67,7 +67,7 @@ void msServoInit(void)
 	/* PWMの設定 */
 	leftPwm.begin();
   	rightPwm.begin();
-	
+
 	PinMode(SDA,INPUT);
 	PinMode(SCL,INPUT);
 	Wire.setClock(200000);            			/* Clock設定               */
