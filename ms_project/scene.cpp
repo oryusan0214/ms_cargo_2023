@@ -151,7 +151,7 @@ int scene(){
     msRODSet  (returnvalue,elevator);//昇降機に指令
     msHANDSet (returnvalue,handopen);//ハンド開閉に指令とエンコーダがないためbusy時間の設定
     Serial.println(scenecounter);
-    delay(1);
+    //delay(1);
     scenecounter = scenecounter + 1;//次のシーンに移る
     return SCENE_OK;
   }
