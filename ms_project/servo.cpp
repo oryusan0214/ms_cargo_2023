@@ -72,6 +72,11 @@ void msServoInit(void)
 	pinMode(SCL,INPUT);
 	Wire.setClock(200000);            			/* Clock設定               */
 
+		leftPwm.begin();
+  	rightPwm.begin();
+		pinMode(SDA,INPUT);
+    pinMode(SCL,INPUT);
+    Wire.setClock(200000);                      /* Clock設定               */
   	leftPwm.setPWMFreq(100);
   	rightPwm.setPWMFreq(100);
 	return;

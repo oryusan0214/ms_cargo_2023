@@ -64,12 +64,14 @@ SLNG msSetTimer( ULNG CallBackTime, void* Object, void (*Callback)(void* objectt
 	
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if(( CallBackTime == 0 ) || ( Callback == NULL )) {
-		msLog( "引数エラー" );
+		msLog( "引数エラー８" );
 		return MS_TIME_PARAM;
 	}
 	
 	/* タイマー上限チェック ------------------------------------------------- */
 	for( ulCounter = 0; ulCounter < MS_TIME_NUM_MAX; ulCounter ++ ) {
+		//Serial.println("--- cnt ---");
+		//Serial.println(ulCounter);
 		if( g_CallbackTbl[ulCounter].Callback == NULL ) {
 			break;
 		}
@@ -156,6 +158,7 @@ SLNG msTimeKill( SLNG TimerID )
 		if( g_CallbackTbl[slCounter].TimerID == TimerID ) {
 			/* 該当タイマーを削除  */
 			memset( &g_CallbackTbl[slCounter], 0, sizeof( MS_TIMER_CALLBACK_TBL ));
+			g_CallbackTbl[slCounter].Callback = NULL;
 		}
 	}
 	
@@ -237,6 +240,7 @@ void msTimeCallbackExecute( void )
 			/* 上記且つタイマーが満了しているか */
 			if( ptr->TimerCounter >= ptr->CallbackTime ) {
 				/* コールバック関数呼び出し */
+				Serial.println("--- callback start ---");
 				ptr->Callback( ptr->object );
 				ptr->TimerCounter = 0;
 			}

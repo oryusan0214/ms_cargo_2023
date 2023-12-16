@@ -95,7 +95,9 @@ void msRODInit(void)
 
 	/* pwm setup */
 	rPwm.begin();					            /* 初期設定 (アドレス0x40用) */
-  	Wire.setClock(400000);            			/* Clock設定               */
+		pinMode(SDA,INPUT);
+    pinMode(SCL,INPUT);
+    Wire.setClock(200000);                      /* Clock設定               */
 	rPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	rPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 
@@ -140,7 +142,7 @@ SLNG msRODGetBusy(UCHR* busyflags)
 {
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if (busyflags == NULL) {
-		msLog("引数エラー");
+		msLog("引数エラー４");
 		return ROD_PARAM;
 	}
 
@@ -170,14 +172,14 @@ SLNG msRODGetBusy(UCHR* busyflags)
 /*				：必ずチェックする事！										  */
 /* 作成日		：2013/03/12	桝井　隆治		新規作成					  */
 /* -------------------------------------------------------------------------- */
-SLNG msRODSet(SLNG* returns, SSHT* distance)
+SLNG msRODSet(SLNG* returns, uint16_t* distance)
 {
 	SLNG rodRet = ROD_OK;
 	int speed = 0;
 
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (distance == NULL)) {
-		msLog("引数エラー");
+		msLog("引数エラー５");
 		return ROD_PARAM;
 	}
 
@@ -210,6 +212,7 @@ SLNG msRODSet(SLNG* returns, SSHT* distance)
 		msLog("タイマー関連エラー: %d", rodRet);
 		return ROD_NG;
 	}
+	r_Mng.busyflg = ROD_BUSY;
 	/* タイマーIDを保管 */
 	r_Mng.timerid = rodRet;
 

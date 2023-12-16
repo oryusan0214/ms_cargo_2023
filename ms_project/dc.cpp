@@ -127,6 +127,10 @@ void msDCInit(void)
 	pinMode(SCL,INPUT);
 	Wire.setClock(200000);            			/* Clock設定               */
 	
+		pinMode(SDA,INPUT);
+    pinMode(SCL,INPUT);
+    Wire.setClock(200000);                      /* Clock設定               */
+
 	dcPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	dcPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
 
