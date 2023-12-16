@@ -94,8 +94,8 @@ void msRODInit(void)
 
 	/* pwm setup */
 	rPwm.begin();					            /* 初期設定 (アドレス0x40用) */
-  	PinMode(SDA,INPUT);
-	PinMode(SCL,INPUT);
+  	pinMode(SDA,INPUT);
+	pinMode(SCL,INPUT);
 	Wire.setClock(200000);            			/* Clock設定               */
 	rPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	rPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
