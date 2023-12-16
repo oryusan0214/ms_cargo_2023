@@ -47,6 +47,7 @@ void setup()
 void loop()
 {
  test();
+  msTimeCallbackExecute();
  //Serial.println("loop");
  /*
 
@@ -61,7 +62,7 @@ void loop()
   Serial.println("--- main start ---");
 
   */
-# 57 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+# 58 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
   /*受信データを取得*/
 
   /*busy信号検出*/
@@ -72,7 +73,7 @@ void loop()
   msDCGetBusy   (armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
 
 	*/
-# 65 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+# 66 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
   /*ジャイロデータ取得*/
 
   //gyro_get(gyro_data);
@@ -83,6 +84,6 @@ void loop()
   return 0;
 
 */
-# 74 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+# 75 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
  /*main();*/
 }

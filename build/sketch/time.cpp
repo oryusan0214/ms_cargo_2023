@@ -159,6 +159,7 @@ SLNG msTimeKill( SLNG TimerID )
 			/* 該当タイマーを削除  */
 			memset( &g_CallbackTbl[slCounter], 0, sizeof( MS_TIMER_CALLBACK_TBL ));
 			g_CallbackTbl[slCounter].Callback = NULL;
+			break;
 		}
 	}
 	

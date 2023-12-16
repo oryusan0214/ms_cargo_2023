@@ -47,6 +47,7 @@ PCA9685 leftPwm		= PCA9685(0x41);    		/* 左サーボのI2Cアドレス		 */
 PCA9685 rightPwm 	= PCA9685(0x42);   			/* 左サーボのI2Cアドレス		 */
 uint16_t ang_min[SERVO_MAX] = {125,45,65,125,10,86,125,45,50,125,10,50,125,10,75,125,10,60};
 uint16_t ang_max[SERVO_MAX] = {180,70,135,180,37,110,180,70,120,180,50,120,180,30,105,135,40,90};
+uint16_t ang_ini[SERVO_MAX] = {140,70,140,140,35,95,145,70,44,140,35,50,140,35,90,140,35,132}
 
 /* -------------------------------------------------------------------------- */
 /* 関数名		：msServoInit												  */
@@ -62,6 +63,7 @@ void msServoInit(void)
 	SLNG slCounter = 0;
 	for (slCounter = 0; slCounter < ( sizeof(g_Mng) / sizeof(g_Mng[0])); slCounter++) {
 		msServoInitRecord(&g_Mng[slCounter],slCounter);
+		g_Mng[slCounter].oldangles = ang_ini[slCounter];
 	}
 
 	/* PWMの設定 */
