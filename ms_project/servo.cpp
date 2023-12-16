@@ -200,8 +200,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		if(sTmpAngle == 0){
 			sTmpAngle++;
 		}
-		Serial.println(sTmpAngle);
-		delay(100);
+	
 		/* タイマー計算＆コールバック設定 */
 		slRet = msSetTimer(sTmpAngle, &g_Mng[slCounter], msServoTimerCallback);
 		if ((slRet == MS_TIME_FULL) || (slRet == MS_TIME_PARAM)) {
