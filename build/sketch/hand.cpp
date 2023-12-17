@@ -189,7 +189,8 @@ SLNG msHANDSet(SLNG* returns, SSHT* setting)
 
 	/* 指定角度を古くしておく */
 	h_Mng.oldstate = *setting;
-
+	Serial.println("rrrrrrrr");
+	Serial.println(handUD);
 	/* ##HANDモーターのレジスタ設定 */
 	if(handUD == 0) {
 		hPwm.setPWM(HAND_PIN, 0, 0);

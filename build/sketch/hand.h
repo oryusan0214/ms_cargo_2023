@@ -24,7 +24,7 @@
 #define HAND_READY         (    0 )			    /* HAND待機				  */
 #define HAND_BUSY          (    3 )			    /* HANDビジー				  */
 #define HAND_NOSET       ( 0xEFFF )			    /* HAND設定無し			  */
-#define HAND_SPEED              255            /* HANDモータの出力値              */
+#define HAND_SPEED              4095            /* HANDモータの出力値              */
 
 #define HAND_DST_MIN             0             /* HANDモータの最大距離          */
 #define HAND_DST_MAX           270             /* HANDモータの最小角距離         */

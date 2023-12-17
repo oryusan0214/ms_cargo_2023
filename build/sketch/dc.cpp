@@ -95,8 +95,8 @@ void msDCInit(void)
 	RAngle = DC_R_INIT;
 	LCount = 0;
 	RCount = 0;
-	LInput = LAngle;
-	RInput = RAngle;
+	LInput = LCount;
+	RInput = RCount;
 	LSetpoint = 0;
 	RSetpoint = 0;
 
@@ -127,10 +127,6 @@ void msDCInit(void)
   	pinMode(SDA,INPUT);
 	pinMode(SCL,INPUT);
 	Wire.setClock(200000);            			/* Clock設定               */
-	
-		pinMode(SDA,INPUT);
-    pinMode(SCL,INPUT);
-    Wire.setClock(200000);                      /* Clock設定               */
 
 	dcPwm.setPWMFreq(1000);			        	/* PWM周期を60Hzに設定 (アドレス0x40用) */
 	dcPwm.setPWM(0, 0, 0);              		/* PWM設定                 */
@@ -227,7 +223,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 	}
 
 	/* DCの個数分ループして各種設定 */
-	for (dcCounter == 0; dcCounter < DC_MAX; dcCounter++) {
+	for (dcCounter = 0; dcCounter < DC_MAX; dcCounter++) {
 		/* DCがビジー時は上位層の設定ミス */
 		if (dc_Mng[dcCounter].busyflg == DC_BUSY) {
 			returns[dcCounter] = DC_BUSY;
@@ -253,6 +249,10 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		/* ##define値を確認 移動予定角度から時間へ変換 */
 		dTmpAngle = dTmpAngle * DC_MOVETIME;
 
+		if(dTmpAngle == 0){
+			dTmpAngle++;
+		}
+
 		/* タイマー計算＆コールバック設定 */
 		dcRet = msSetTimer(dTmpAngle, &dc_Mng[dcCounter], msDCTimerCallback);
 		if ((dcRet == MS_TIME_FULL) || (dcRet == MS_TIME_PARAM)) {
@@ -265,25 +265,27 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 
 		/* 指定角度を古くしておく */
 		dc_Mng[dcCounter].oldangles = angles[dcCounter];
+		Serial.println("----");
 
 		/* ##サーボモーターのレジスタ設定 */
 		/* idに合わせて変数設定 */
 		switch(dcCounter){
 		case DC_L :
 			/* PID設定 */
+			/*
 			LInput 		= LAngle;
 			LSetpoint 	= dc_Mng[dcCounter].oldangles;
 			LmyPID.Compute();						/* PID演算 */
-			speed = abs((int)LOutput);				/* 出力値格納 */
-			speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
-			
+			/*speed = abs((int)LOutput);				/* 出力値格納 */
+			/*speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
+			Serial.println(DC_SPEED);
 			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
 				digitalWrite(DC_L_DIR_PIN,HIGH);
-				dcPwm.setPWM(dcCounter, 0, speed);
+				dcPwm.setPWM(0, 0, 4095);
 			}else{
 				digitalWrite(DC_L_DIR_PIN,LOW);
-				dcPwm.setPWM(dcCounter, 0, speed);
+				dcPwm.setPWM(0, 0, 4095);
 			}
 			/* 必要ならディレイ */
   			// delay(1);
@@ -291,19 +293,20 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 
 		case DC_R :
 			/* PID設定 */
+			/*
 			RInput 		= RAngle;
 			RSetpoint 	= dc_Mng[dcCounter].oldangles;
 			RmyPID.Compute();						/* PID演算 */
-			speed = abs((int)ROutput);				/* 出力値格納 */
-			speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
+			/*speed = abs((int)ROutput);				/* 出力値格納 */
+			/*speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
 			
 			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
 				digitalWrite(DC_R_DIR_PIN,HIGH);
-				dcPwm.setPWM(dcCounter, 0, speed);
+				dcPwm.setPWM(1, 0, 4095);
 			}else{
 				digitalWrite(DC_R_DIR_PIN,LOW);
-				dcPwm.setPWM(dcCounter, 0, speed);
+				dcPwm.setPWM(1, 0, 4095);
 			}
 			/* 必要ならディレイ */
   			// delay(1);

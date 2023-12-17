@@ -23,17 +23,20 @@
 #include "time.h"
 #include "log.h"
 #include "servo.h"
+#include "dc.h"
+#include "rod.h"
+#include "hand.h"
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
 //short=2byte
 //long=4byte
 
-#line 31 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 34 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup();
-#line 46 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 52 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void loop();
-#line 31 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
+#line 34 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino"
 void setup()
 {
 	Serial.begin(115200);
@@ -43,6 +46,9 @@ void setup()
   msTimeInit();
   msLogInit();
   msServoInit();
+  msDCInit();
+  msHANDInit();
+  msRODInit();
   SPI.begin();
   digitalWrite(SS, HIGH);
   Serial.println("System Start");

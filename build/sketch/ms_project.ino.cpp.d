@@ -21,4 +21,7 @@ C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\ms_project.ino.cpp.o: \
  C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\log.h \
  C:\Users\yamad\Documents\Arduino\libraries\TimerOne-master/TimerOne.h \
  C:\Users\yamad\Documents\Arduino\libraries\TimerOne-master/config/known_16bit_timers.h \
- C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\servo.h
+ C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\servo.h \
+ C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\dc.h \
+ C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\rod.h \
+ C:\WORK\ŠwZ\–¢—ˆ‘n‘¢“W\ms_project\build\sketch\hand.h

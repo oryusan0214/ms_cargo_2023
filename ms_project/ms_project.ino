@@ -33,7 +33,7 @@
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	//SPI.setBitOrder(MSBFIRST);
   //SPI.setDataMode(SPI_MODE2);
   //SPI.setClockDivider(SPI_CLOCK_DIV2);

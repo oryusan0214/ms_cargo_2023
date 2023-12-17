@@ -116,8 +116,8 @@ void msTimeInit( void )
 	/* タイマー開始 */
 	/* ##Aruduinoのタイマレジスタを設定する様に置き換え。1msでセット */
 	Timer1.initialize(1000);
-  Timer1.attachInterrupt(msTimerCallback);
-  Timer1.start();
+  	Timer1.attachInterrupt(msTimerCallback);
+  	Timer1.start();
 	return;
 }
 
@@ -158,7 +158,6 @@ SLNG msTimeKill( SLNG TimerID )
 		if( g_CallbackTbl[slCounter].TimerID == TimerID ) {
 			/* 該当タイマーを削除  */
 			memset( &g_CallbackTbl[slCounter], 0, sizeof( MS_TIMER_CALLBACK_TBL ));
-			g_CallbackTbl[slCounter].Callback = NULL;
 			break;
 		}
 	}
