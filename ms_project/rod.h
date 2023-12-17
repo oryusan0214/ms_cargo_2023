@@ -23,7 +23,7 @@
 #define ROD_READY         (    0 )			/* サーボ待機				  */
 #define ROD_BUSY          (    3 )			/* サーボビジー				  */
 #define ROD_NOSET       ( 0xEFFF )			/* サーボ設定無し			  */
-#define ROD_SPEED              255            /* RODモータの出力値              */
+#define ROD_SPEED           4095            /* RODモータの出力値              */
 
 #define ROD_DST_MIN             0             /* RODモータの最大距離          */
 #define ROD_DST_MAX            50             /* RODモータの最小角距離         */

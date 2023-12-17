@@ -204,6 +204,9 @@ SLNG msRODSet(SLNG* returns, uint16_t* distance)
 	}
 	/* ##define値を確認 移動予定角度から時間へ変換 */
 	dTmpDistance = dTmpDistance * ROD_MOVETIME;
+	if(dTmpDistance == 0){
+			dTmpDistance++;
+	}
 
 	/* タイマー計算＆コールバック設定 */
 	rodRet = msSetTimer(dTmpDistance, &r_Mng, msRODTimerCallback);
@@ -220,19 +223,20 @@ SLNG msRODSet(SLNG* returns, uint16_t* distance)
 
 	/* ##サーボモーターのレジスタ設定 */
 	/* PID設定 */
+	/*
 	RODInput 		= RODAngle;
 	RODSetpoint 	= r_Mng.olddistance;
 	RODmyPID.Compute();						/* PID演算 */
-	speed = abs((int)RODOutput);				/* 出力値格納 */
-	speed = map(speed,0,ROD_SPEED,0,4095);/* パルス幅の値に変換 */
-			
+	/*speed = abs((int)RODOutput);				/* 出力値格納 */
+	/*speed = map(speed,0,ROD_SPEED,0,4095);/* パルス幅の値に変換 */
+	Serial.println("---koko---");
 	/* 方向指示 + PWM設定 */
 	if(rodUD == true) {
 		digitalWrite(ROD_DIR_PIN,HIGH);
-		rPwm.setPWM(ROD_PIN, 0, speed);
+		rPwm.setPWM(ROD_PIN, 0, ROD_SPEED);
 	}else{
 		digitalWrite(ROD_DIR_PIN,LOW);
-		rPwm.setPWM(ROD_PIN, 0, speed);
+		rPwm.setPWM(ROD_PIN, 0, ROD_SPEED);
 	}
 	/* 必要ならディレイ */
   	// delay(1);

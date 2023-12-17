@@ -22,6 +22,9 @@
 #include "time.h"
 #include "log.h"
 #include "servo.h"
+#include "dc.h"
+#include "rod.h"
+#include "hand.h"
 /* ------------------------------------------------------------------------ */
 /* */
 //int=1byte
@@ -30,13 +33,16 @@
 
 void setup()
 {
-	Serial.begin(115200);
+	Serial.begin(9600);
 	//SPI.setBitOrder(MSBFIRST);
   //SPI.setDataMode(SPI_MODE2);
   //SPI.setClockDivider(SPI_CLOCK_DIV2);
   msTimeInit();
   msLogInit();
   msServoInit();
+  msDCInit();
+  msHANDInit();
+  msRODInit();
   SPI.begin();
   digitalWrite(SS, HIGH);
   Serial.println("System Start");

@@ -24,7 +24,7 @@
 #define DC_READY         (    0 )			    /* サーボ待機				  */
 #define DC_BUSY          (    3 )			    /* サーボビジー				  */
 #define DC_NOSET       ( 0xEFFF )			    /* サーボ設定無し			  */
-#define DC_SPEED              255               /* DCモータの出力値              */
+#define DC_SPEED             255               /* DCモータの出力値              */
 
 #define DC_ANG_MIN             0                /* DCモータの最大角          */
 #define DC_ANG_MAX           270                /* DCモータの最小角          */
