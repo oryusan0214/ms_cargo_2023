@@ -64,6 +64,7 @@ double LKd=0.20;
 double RKp=4.00;
 double RKi=0.00;
 double RKd=0.20;
+uint16_t dcang_ini[2] = {0,0};
 
 /* PIDの変数宣言 */
 PID LmyPID(&LInput, &LOutput, &LSetpoint, LKp, LKi, LKd, DIRECT);
@@ -87,6 +88,7 @@ void msDCInit(void)
 	SLNG dcCounter = 0;
 	for (dcCounter = 0; dcCounter < ( sizeof(dc_Mng) / sizeof(dc_Mng[0])); dcCounter++) {
 		msDCInitRecord(&dc_Mng[dcCounter],dcCounter);
+		//dc_Mng[dcCounter].oldangles = dcang_ini[dcCounter];
 	}
 
 	/* 変数の初期化 */
