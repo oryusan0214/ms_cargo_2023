@@ -5,7 +5,7 @@
 #define ARM_NUM       (      2)
 #define ELEVATOR_NUM  (      1)
 #define HANDOPEN_NUM  (      1)
-#define SCENE_END     (      1)
+#define SCENE_END     (     -2)
 
 #include <stdint.h>
 
@@ -40,3 +40,6 @@ typedef struct  Scene
 int sceneInuput(Scene*);
 int sceneBusy();
 int scene();
+Scene SsceneInput(uint16_t counter);
+Scene LTurnsceneInput(uint16_t counter);
+Scene RTurnsceneInput(uint16_t counter);

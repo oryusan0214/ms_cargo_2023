@@ -37,20 +37,20 @@ typedef struct {
 } DC_MNG;
 
 /* -------------------------------------------------------------------------- */
-/* プロトタイプ宣言(ローカル)												  */
+/* プロトタイプ宣言(ローカル)												  												*/
 /* -------------------------------------------------------------------------- */
 void msDCInitRecord(DC_MNG* mng,SLNG id);
 void msLDCInterrupt();
 void msRDCInterrupt();
 
 /* -------------------------------------------------------------------------- */
-/* グローバル変数宣言														  */
+/* グローバル変数宣言														  														*/
 /* -------------------------------------------------------------------------- */
-DC_MNG 	dc_Mng[DC_MAX];						/* DC管理データ				  */
-SINT	LAngle;									/* 左DCの角度				 */
-SINT	RAngle;									/* 右DCの角度				 */
-SINT	LCount;									/* 左のDCエンコのカウント	 */ 
-SINT	RCount;									/* 右のDCエンコのカウント	 */
+DC_MNG 	dc_Mng[DC_MAX];						/* DC管理データ				  		*/
+SINT	LAngle;											/* 左DCの角度				 				*/
+SINT	RAngle;											/* 右DCの角度				 				*/
+SINT	LCount;											/* 左のDCエンコのカウント	 	*/ 
+SINT	RCount;											/* 右のDCエンコのカウント	 	*/
 
 double LSetpoint, LInput, LOutput;     			/* PIDの関数に用いる変数L	 */
 double RSetpoint, RInput, ROutput;     			/* PIDの関数に用いる変数R	 */
