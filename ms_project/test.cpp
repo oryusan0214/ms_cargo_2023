@@ -9,6 +9,8 @@ typedef struct angle{
 }angle;
 int test()
 {
+  Serial.println("\n--- TEST START ----\n");
+
   scene();
   /*
   send_data* senderPdata;
@@ -60,7 +62,6 @@ int test()
   senderdata.reservation3 = 0x12;
   
   */
-  Serial.println("\n--- TEST START ----\n");
   
   /*
   senderPdata=&senderdata;

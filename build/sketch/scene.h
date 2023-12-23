@@ -1,11 +1,16 @@
 #line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\scene.h"
 #define SCENE_OK      (      0)
-#define SCENE_NG      (     -1)
+#define SCENE_NG      (      1)
+#define SCENE_END     (      2)
+
 #define SERVO_NUM     (     18)
 #define ARM_NUM       (      2)
 #define ELEVATOR_NUM  (      1)
 #define HANDOPEN_NUM  (      1)
-#define SCENE_END     (     -2)
+
+#define SCENE_STRAIGHT (     1)
+#define SCENE_LTURN    (     2)
+#define SCENE_RTURN    (     3)
 
 #include <stdint.h>
 
@@ -37,9 +42,10 @@ typedef struct  Scene
   uint16_t  hand;
 } Scene;
 
-int sceneInuput(Scene*);
+
 int sceneBusy();
 int scene();
-Scene SsceneInput(uint16_t counter);
-Scene LTurnsceneInput(uint16_t counter);
-Scene RTurnsceneInput(uint16_t counter);
+Scene sceneInuput(uint8_t* checker);
+Scene straightSceneInput(uint16_t counter, uint8_t* checker);
+Scene lTurnSceneInput(uint16_t counter, uint8_t* checker);
+Scene rTurnSceneInput(uint16_t counter, uint8_t* checker);

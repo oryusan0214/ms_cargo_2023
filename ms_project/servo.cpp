@@ -181,9 +181,9 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		}
 		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
 		if ((angles[slCounter] < ang_min[slCounter]) || ((angles[slCounter] > ang_max[slCounter]) && (angles[slCounter] != SERVO_NOSET))) {
-			Serial.println("--- (9) ---\n");
-			Serial.println(slCounter);
-			Serial.println(angles[slCounter]);
+			//Serial.println("--- (9) ---\n");
+			//Serial.println(slCounter);
+			//Serial.println(angles[slCounter]);
 			returns[slCounter] = SERVO_PARAM;
 			continue;
 		}
@@ -231,7 +231,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
     	slAng = slAng + 500;
     	/* 10進数を12進数に変換（？） */
     	slAng = map(slAng, 0, 10000, 0, 4095);
-		Serial.println("koko kiteruyo");
+		//Serial.println("koko kiteruyo");
 		/* idに対応したドライバにpwmセット */
 		if(slCounter < (SERVO_MAX / 2) ){
   			leftPwm.setPWM(slCounter, 0, slAng);

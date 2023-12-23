@@ -267,7 +267,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 
 		/* 指定角度を古くしておく */
 		dc_Mng[dcCounter].oldangles = angles[dcCounter];
-		Serial.println("----");
+		//Serial.println("----");
 
 		/* ##サーボモーターのレジスタ設定 */
 		/* idに合わせて変数設定 */
@@ -280,7 +280,7 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			LmyPID.Compute();						/* PID演算 */
 			/*speed = abs((int)LOutput);				/* 出力値格納 */
 			/*speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
-			Serial.println(DC_SPEED);
+			//Serial.println(DC_SPEED);
 			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
 				digitalWrite(DC_L_DIR_PIN,HIGH);
