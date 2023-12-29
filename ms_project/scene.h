@@ -10,6 +10,7 @@
 #define SCENE_STRAIGHT (     1)
 #define SCENE_LTURN    (     2)
 #define SCENE_RTURN    (     3)
+#define SCENE_INIT    (     4)
 
 #include <stdint.h>
 
@@ -48,3 +49,4 @@ Scene sceneInuput(uint8_t* checker);
 Scene straightSceneInput(uint16_t counter, uint8_t* checker);
 Scene lTurnSceneInput(uint16_t counter, uint8_t* checker);
 Scene rTurnSceneInput(uint16_t counter, uint8_t* checker);
+Scene InitSceneInput(uint16_t counter, uint8_t* checker);
