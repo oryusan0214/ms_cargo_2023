@@ -99,7 +99,7 @@ Scene sceneInuput(uint8_t *checker)
   static uint16_t scenecounter = 0;
   static uint16_t scenariocounter = 0;
   uint8_t scenechecker = SCENE_OK;
-  uint8_t scene[] = {SCENE_INIT,SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT};
+  uint8_t scene[] = {SCENE_INIT,SCENE_ARM};
   Scene nowscene;
 
   Serial.println("--- scenariocounter ---");
@@ -129,6 +129,9 @@ Scene sceneInuput(uint8_t *checker)
     break;
   case SCENE_INIT:
     nowscene = InitSceneInput(scenecounter, &scenechecker);
+    break;
+  case SCENE_ARM:
+    nowscene = ArmSceneInput(scenecounter, &scenechecker);
     break;
   default:
     break;
@@ -352,6 +355,30 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
     return;
   }
   return Init[counter];
+}
+
+Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
+{
+  Scene Arm[] = {
+      // 初期位置
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 10, 00, 00}
+
+  };
+  Serial.println("--- ArmSceneInput ---");
+  Serial.println(counter);
+  if (counter < 0)
+  {
+    msLog("--- InitSceneInput counter error ---\n");
+    *checker = SCENE_NG;
+    return;
+  }
+  if (counter >= sizeof(Arm) / sizeof(Arm[0]))
+  {
+    msLog("--- InitSceneInput counter over ---\n");
+    *checker = SCENE_END;
+    return;
+  }
+  return Arm[counter];
 }
 
 int sceneBusy()
