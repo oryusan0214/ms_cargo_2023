@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-/* dummy.ino																 																  */
+/* ms_project.ino																 															*/
 /* シ  ス  テ  ム  メ  イ  ン												 												  */
 /* アプリケーションエントリーポイントです。(Arduinoではここが								  */
 /*																					エントリポジションです。)					*/
@@ -53,30 +53,5 @@ void loop()
 {
 	test();
   msTimeCallbackExecute();
-	//Serial.println("loop");
-	/*
-	UCHR legbusy[18]={0};
-  UCHR armbusy[2]={0};
-  uint16_t gyro_data[6]={0,0,0,0,0,0};
 
-  Serial.println("--- main start ---");
-  */
-  /*受信データを取得*/
-  
-  /*busy信号検出*/
-	/*
-  msServoGetBusy(legbusy,sizeof(legbusy)/sizeof(legbusy[0]));
-  msDCGetBusy   (armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
-	*/
-
-  /*ジャイロデータ取得*/
-
-  //gyro_get(gyro_data);
-
-  /*送信データを作成*/  
-/*
-  return 0;
-*/
-	
-	/*main();*/
 }

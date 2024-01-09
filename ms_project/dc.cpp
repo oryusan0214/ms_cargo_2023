@@ -112,7 +112,7 @@ void msDCInit(void)
 	pinMode(DC_R_END2_PIN, INPUT);
 
 	/* 割り込み設定 */
-    attachInterrupt(digitalPinToInterrupt(DC_L_END1_PIN), msLDCInterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DC_L_END1_PIN), msLDCInterrupt, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(DC_R_END1_PIN), msRDCInterrupt, CHANGE);
 
 	/* PID Setup */
