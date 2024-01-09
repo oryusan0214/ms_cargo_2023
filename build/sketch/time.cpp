@@ -240,7 +240,7 @@ void msTimeCallbackExecute( void )
 			/* 上記且つタイマーが満了しているか */
 			if( ptr->TimerCounter >= ptr->CallbackTime ) {
 				/* コールバック関数呼び出し */
-				Serial.println("--- callback start ---");
+				//Serial.println("--- callback start ---");
 				ptr->Callback( ptr->object );
 				ptr->TimerCounter = 0;
 			}

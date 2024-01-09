@@ -162,6 +162,8 @@ Scene sceneInuput(uint8_t *checker)
   {
     scenecounter = 0;
     scenariocounter++;
+    msLog("--- Scene END ----\n");
+    *checker=SCENE_END;
     return;
   }
   return;
@@ -215,7 +217,7 @@ Scene straightSceneInput(uint16_t counter, uint8_t *checker)
     *checker = SCENE_NG;
     return;
   }
-  if (counter >= sizeof(straight) / sizeof(straight[0]))
+  if (counter > sizeof(straight) / sizeof(straight[0]))
   {
     msLog("--- straightSceneInput counter over ---\n");
     *checker = SCENE_END;
@@ -273,7 +275,7 @@ Scene lTurnSceneInput(uint16_t counter, uint8_t *checker)
     *checker = SCENE_NG;
     return;
   }
-  if (counter >= sizeof(LTurn) / sizeof(LTurn[0]))
+  if (counter > sizeof(LTurn) / sizeof(LTurn[0]))
   {
     msLog("--- lTurnSceneInput counter over ---\n");
     *checker = SCENE_END;
@@ -329,7 +331,7 @@ Scene rTurnSceneInput(uint16_t counter, uint8_t *checker)
     *checker = SCENE_NG;
     return;
   }
-  if (counter >= sizeof(RTurn) / sizeof(RTurn[0]))
+  if (counter > sizeof(RTurn) / sizeof(RTurn[0]))
   {
     msLog("--- rTurnSceneInput counter over ---\n");
     *checker = SCENE_END;
@@ -342,7 +344,7 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Init[] = {
       // 初期位置
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00}
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0,0, 0, 0}
 
   };
   Serial.println("--- InitSceneInput ---");
@@ -366,7 +368,8 @@ Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Arm[] = {
       // 初期位置
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 10, 00, 00}
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 30, 30, 0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0}
 
   };
   Serial.println("--- ArmSceneInput ---");
@@ -395,11 +398,13 @@ int sceneBusy()
   int count = 0;
 
   msServoGetBusy(legbusy, sizeof(legbusy) / sizeof(legbusy[0]));
+  msDCGetBusy(armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
+  msRODGetBusy(&elevatorbusy);
+  msHANDGetBusy(&handbusy);
 
   if (
       handbusy == 0 &&
       elevatorbusy == 0 &&
-
       armbusy[0] == 0 && armbusy[1] == 0 &&
       legbusy[0] == 0 && legbusy[1] == 0 && legbusy[2] == 0 && legbusy[3] == 0 && legbusy[4] == 0 && legbusy[5] == 0 && legbusy[6] == 0 && legbusy[7] == 0 && legbusy[8] == 0 && legbusy[9] == 0 && legbusy[10] == 0 && legbusy[11] == 0 && legbusy[12] == 0 && legbusy[13] == 0 && legbusy[14] == 0 && legbusy[15] == 0 && legbusy[16] == 0 && legbusy[17] == 0)
   {
