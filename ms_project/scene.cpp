@@ -104,7 +104,20 @@ Scene sceneInuput(uint8_t *checker)
   static uint16_t scenecounter = 0;
   static uint16_t scenariocounter = 0;
   uint8_t scenechecker = SCENE_OK;
-  uint8_t scene[] = {SCENE_INIT,SCENE_ARM};
+  /*
+  uint8_t scene[] = {
+                      SCENE_INIT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_RTURN,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT
+                    };
+  */
+ uint8_t scene[] = {SCENE_INIT};
   Scene nowscene;
 
   Serial.println("--- scenariocounter ---");
@@ -344,7 +357,11 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Init[] = {
       // 初期位置
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0,0, 0, 0}
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,    0,   0,   0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,    0, 240,   0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,  240,   0,   0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,    0,   0,   0, 0},
+
 
   };
   Serial.println("--- InitSceneInput ---");
@@ -355,7 +372,7 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
     *checker = SCENE_NG;
     return;
   }
-  if (counter >= sizeof(Init) / sizeof(Init[0]))
+  if (counter > sizeof(Init) / sizeof(Init[0]))
   {
     msLog("--- InitSceneInput counter over ---\n");
     *checker = SCENE_END;
@@ -369,7 +386,15 @@ Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
   Scene Arm[] = {
       // 初期位置
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 30, 30, 0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 20, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 1},
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0}
+
+
+
+
 
   };
   Serial.println("--- ArmSceneInput ---");

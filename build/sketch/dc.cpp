@@ -113,7 +113,7 @@ void msDCInit(void)
 	pinMode(DC_R_END2_PIN, INPUT);
 
 	/* 割り込み設定 */
-    attachInterrupt(digitalPinToInterrupt(DC_L_END1_PIN), msLDCInterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DC_L_END1_PIN), msLDCInterrupt, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(DC_R_END1_PIN), msRDCInterrupt, CHANGE);
 
 	/* PID Setup */
@@ -229,11 +229,13 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		/* DCがビジー時は上位層の設定ミス */
 		if (dc_Mng[dcCounter].busyflg == DC_BUSY) {
 			returns[dcCounter] = DC_BUSY;
+			Serial.println("---- dc err 1 ----");
 			continue;
 		}
 		/* ##要確認：DCの角度範囲がおかしい場合はパラメータエラー */
 		if ((angles[dcCounter] < DC_ANG_MIN) || ((angles[dcCounter] > DC_ANG_MAX) && (angles[dcCounter] != DC_NOSET))) {
 			returns[dcCounter] = DC_PARAM;
+			Serial.println("---- dc err 2 ----");
 			continue;
 		}
 		/* DCモーター設定可能と判断 --------------------------------------*/
@@ -241,8 +243,12 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		/* 指定角度からDC移動に必要な時間を算出 */
 		SSHT dTmpAngle = 0;
 		bool dcUD = false;						/* 回転方向を判断する				 */
-												/* 初期は逆転(マイナス方向)			 */
+												/* 初期は逆転(マイナス方向)	false 0 */
 		dTmpAngle = dc_Mng[dcCounter].oldangles - angles[dcCounter];
+
+		Serial.println("---- dt ----");
+		Serial.println(dTmpAngle);
+		Serial.println("----  ----");
 		/* マイナス角度をプラスに補正 */
 		if (dTmpAngle < 0) {
 			dTmpAngle = dTmpAngle * -1;
@@ -254,6 +260,10 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		if(dTmpAngle == 0){
 			dTmpAngle++;
 		}
+
+		Serial.println("---- DT ----");
+		Serial.println(dTmpAngle);
+		Serial.println("----  ----");
 
 		/* タイマー計算＆コールバック設定 */
 		dcRet = msSetTimer(dTmpAngle, &dc_Mng[dcCounter], msDCTimerCallback);
@@ -267,7 +277,6 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 
 		/* 指定角度を古くしておく */
 		dc_Mng[dcCounter].oldangles = angles[dcCounter];
-		//Serial.println("----");
 
 		/* ##サーボモーターのレジスタ設定 */
 		/* idに合わせて変数設定 */
@@ -283,9 +292,15 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			//Serial.println(DC_SPEED);
 			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
+				Serial.println("---- UD ----");
+				Serial.println(dcUD);
+				Serial.println("----  ----");
 				digitalWrite(DC_L_DIR_PIN,HIGH);
 				dcPwm.setPWM(0, 0, 4095);
 			}else{
+				Serial.println("---- UD ----");
+				Serial.println(dcUD);
+				Serial.println("----  ----");
 				digitalWrite(DC_L_DIR_PIN,LOW);
 				dcPwm.setPWM(0, 0, 4095);
 			}
