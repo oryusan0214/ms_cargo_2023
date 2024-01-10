@@ -1,4 +1,5 @@
 #line 1 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\dc.cpp"
+
 /* -------------------------------------------------------------------------- */
 /* dc.cpp																  */
 /* DCモーター制御に関わる処理												  */
@@ -295,13 +296,13 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 				Serial.println("---- UD ----");
 				Serial.println(dcUD);
 				Serial.println("----  ----");
-				digitalWrite(DC_L_DIR_PIN,HIGH);
+				digitalWrite(DC_L_DIR_PIN,LOW);
 				dcPwm.setPWM(0, 0, 4095);
 			}else{
 				Serial.println("---- UD ----");
 				Serial.println(dcUD);
 				Serial.println("----  ----");
-				digitalWrite(DC_L_DIR_PIN,LOW);
+				digitalWrite(DC_L_DIR_PIN,HIGH);
 				dcPwm.setPWM(0, 0, 4095);
 			}
 			/* 必要ならディレイ */
@@ -319,10 +320,10 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			
 			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
-				digitalWrite(DC_R_DIR_PIN,HIGH);
+				digitalWrite(DC_R_DIR_PIN,LOW);
 				dcPwm.setPWM(1, 0, 4095);
 			}else{
-				digitalWrite(DC_R_DIR_PIN,LOW);
+				digitalWrite(DC_R_DIR_PIN,HIGH);
 				dcPwm.setPWM(1, 0, 4095);
 			}
 			/* 必要ならディレイ */

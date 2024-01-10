@@ -105,6 +105,19 @@ Scene sceneInuput(uint8_t *checker)
   static uint16_t scenecounter = 0;
   static uint16_t scenariocounter = 0;
   uint8_t scenechecker = SCENE_OK;
+  /*
+  uint8_t scene[] = {
+                      SCENE_INIT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_RTURN,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT,SCENE_STRAIGHT,
+                      SCENE_STRAIGHT,SCENE_STRAIGHT
+                    };
+  */
   uint8_t scene[] = {SCENE_INIT};
   Scene nowscene;
 
@@ -164,7 +177,7 @@ Scene sceneInuput(uint8_t *checker)
     scenecounter = 0;
     scenariocounter++;
     msLog("--- Scene END ----\n");
-    *checker=SCENE_END;
+    *checker = SCENE_END;
     return;
   }
   return;
@@ -173,7 +186,7 @@ Scene straightSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene straight[] = {
       // 左前、左中、左後、右前、右中、右後
-      //１回動かすごとに約４ｃｍ移動
+      // １回動かすごとに約４ｃｍ移動
       // 右前
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 155, 10, 60, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00},
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 120, 10, 60, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00},
@@ -231,7 +244,7 @@ Scene lTurnSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene LTurn[] = {
       // 左前、左中、左後、右前、右中、右後
-      //１２回で90度近く旋回
+      // １２回で90度近く旋回
       // 右前
       {140, 70, 130, 140, 35, 95, 140, 70, 65, 140, 10, 60, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00},
       {140, 70, 130, 140, 35, 95, 140, 70, 65, 140, 10, 45, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00},
@@ -288,7 +301,7 @@ Scene lTurnSceneInput(uint16_t counter, uint8_t *checker)
 Scene rTurnSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene RTurn[] = {
-      //１２回で90度近く旋回
+      // １２回で90度近く旋回
       // 右前
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 10, 60, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00},
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 10, 75, 140, 35, 90, 125, 35, 115, 00, 00, 00, 00},
@@ -322,8 +335,7 @@ Scene rTurnSceneInput(uint16_t counter, uint8_t *checker)
       // 右旋回
       {140, 77, 130, 140, 35, 105, 140, 82, 75, 140, 40, 70, 140, 35, 100, 125, 43, 125, 00, 00, 00, 00},
       {140, 77, 125, 140, 35, 100, 140, 82, 70, 140, 40, 65, 140, 35, 95, 125, 43, 120, 00, 00, 00, 00},
-      {140, 77, 120, 140, 35, 95, 140, 82, 65, 140, 40, 60, 140, 35, 90, 125, 43, 115, 00, 00, 00, 00}
-    };
+      {140, 77, 120, 140, 35, 95, 140, 82, 65, 140, 40, 60, 140, 35, 90, 125, 43, 115, 00, 00, 00, 00}};
   Serial.println("--- rTurnSceneInput ---");
   Serial.println(counter);
   if (counter < 0)
@@ -345,13 +357,7 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Init[] = {
       // 初期位置
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,    0,   0,   0, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,    0, 240,   0, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,  240,   0,   0, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,    0,   0,   0, 0},
-
-
-  };
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0}};
   Serial.println("--- InitSceneInput ---");
   Serial.println(counter);
   if (counter < 0)
@@ -360,7 +366,7 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
     *checker = SCENE_NG;
     return;
   }
-  if (counter > sizeof(Init) / sizeof(Init[0]))
+  if (counter >= sizeof(Init) / sizeof(Init[0]))
   {
     msLog("--- InitSceneInput counter over ---\n");
     *checker = SCENE_END;
@@ -373,16 +379,13 @@ Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Arm[] = {
       // 初期位置
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 30, 30, 0, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 20, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 1},
-      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 0, 0, 0, 0}
-
-
-
-
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 240, 240,   0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 240, 240, 500, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 240, 240, 500, 1},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 240, 240, 500, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 240, 240,   0, 0},
+      {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115,   0,   0,   0, 0}
+      
 
   };
   Serial.println("--- ArmSceneInput ---");
@@ -411,7 +414,7 @@ int sceneBusy()
   int count = 0;
 
   msServoGetBusy(legbusy, sizeof(legbusy) / sizeof(legbusy[0]));
-  msDCGetBusy(armbusy,sizeof(armbusy)/sizeof(armbusy[0]));
+  msDCGetBusy(armbusy, sizeof(armbusy) / sizeof(armbusy[0]));
   msRODGetBusy(&elevatorbusy);
   msHANDGetBusy(&handbusy);
 

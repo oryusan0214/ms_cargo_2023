@@ -205,10 +205,14 @@ SLNG msRODSet(SLNG* returns, uint16_t* distance)
 	}
 	/* ##define値を確認 移動予定角度から時間へ変換 */
 	dTmpDistance = dTmpDistance * ROD_MOVETIME;
+
+	if(rodUD == false){
+		dTmpDistance = dTmpDistance * 1.2;
+	}
+
 	if(dTmpDistance == 0){
 			dTmpDistance++;
 	}
-
 	/* タイマー計算＆コールバック設定 */
 	rodRet = msSetTimer(dTmpDistance, &r_Mng, msRODTimerCallback);
 	if ((rodRet == MS_TIME_FULL) || (rodRet == MS_TIME_PARAM)) {
@@ -233,10 +237,10 @@ SLNG msRODSet(SLNG* returns, uint16_t* distance)
 	//Serial.println("---koko---");
 	/* 方向指示 + PWM設定 */
 	if(rodUD == true) {
-		digitalWrite(ROD_DIR_PIN,HIGH);
+		digitalWrite(ROD_DIR_PIN,LOW);
 		rPwm.setPWM(ROD_PIN, 0, ROD_SPEED);
 	}else{
-		digitalWrite(ROD_DIR_PIN,LOW);
+		digitalWrite(ROD_DIR_PIN,HIGH);
 		rPwm.setPWM(ROD_PIN, 0, ROD_SPEED);
 	}
 	/* 必要ならディレイ */
