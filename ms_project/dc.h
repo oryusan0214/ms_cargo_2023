@@ -27,7 +27,7 @@
 #define DC_SPEED             255               /* DCモータの出力値              */
 
 #define DC_ANG_MIN             0                /* DCモータの最大角          */
-#define DC_ANG_MAX           270                /* DCモータの最小角          */
+#define DC_ANG_MAX           350                /* DCモータの最小角          */
 
 #define DC_L                    0               /* 左肩のDCのID              */
 #define DC_R                    1               /* 右肩のDCのID              */

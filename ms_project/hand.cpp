@@ -171,6 +171,7 @@ SLNG msHANDSet(SLNG* returns, SSHT* setting)
 	/* 同じ→変化なし(1)、Low → High 開く(1)、High → Low 閉じる(2) */
     if(h_Mng.oldstate == *setting){
         handUD = 0;
+				return HAND_OK;
     }else if(h_Mng.oldstate < *setting){
         handUD = 1;
     }else{

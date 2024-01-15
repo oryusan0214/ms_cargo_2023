@@ -12,6 +12,7 @@
 #define SCENE_RTURN    (     3)
 #define SCENE_INIT     (     4)
 #define SCENE_ARM      (     5)
+#define SCENE_ARMDOWN  (     6)
 
 #include <stdint.h>
 
@@ -52,3 +53,4 @@ Scene lTurnSceneInput(uint16_t counter, uint8_t* checker);
 Scene rTurnSceneInput(uint16_t counter, uint8_t* checker);
 Scene InitSceneInput(uint16_t counter, uint8_t* checker);
 Scene ArmSceneInput(uint16_t counter, uint8_t* checker);
+Scene ArmDownSceneInput(uint16_t counter, uint8_t* checker);

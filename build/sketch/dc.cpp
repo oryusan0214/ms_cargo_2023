@@ -92,6 +92,8 @@ void msDCInit(void)
 		msDCInitRecord(&dc_Mng[dcCounter],dcCounter);
 		//dc_Mng[dcCounter].oldangles = dcang_ini[dcCounter];
 	}
+	dc_Mng[0].oldangles = 30;
+	dc_Mng[1].oldangles = 30;
 
 	/* 変数の初期化 */
 	LAngle = DC_L_INIT;
@@ -215,6 +217,7 @@ SLNG msDCGetBusy(UCHR* busyflags, USHT max)
 /* -------------------------------------------------------------------------- */
 SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 {
+	msLog("msDCSet");
 	SLNG dcCounter = 0;
 	SLNG dcRet = DC_OK;
 	int  speed = 0;

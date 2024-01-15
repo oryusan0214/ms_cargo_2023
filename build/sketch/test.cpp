@@ -10,7 +10,7 @@ typedef struct angle{
 }angle;
 int test()
 {
-  Serial.println("\n--- TEST START ----\n");
+  //Serial.println("\n--- TEST START ----");
 
   scene();
   /*
@@ -123,7 +123,7 @@ int test()
 
   
 
-  Serial.println("\n--- END ----\n");
+  //Serial.println("\n--- END ----");
 
 
 
