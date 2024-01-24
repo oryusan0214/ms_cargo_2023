@@ -7,6 +7,7 @@ typedef struct angle{
   float yangle;
   float zangle;
 }angle;
+//testコードを実行する関数です。
 int test()
 {
   //msLog("\n--- TEST START ----");

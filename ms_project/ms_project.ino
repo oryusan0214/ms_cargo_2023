@@ -50,7 +50,7 @@ void setup()
 
 void loop()
 {
-	test();
+	scene();
   msTimeCallbackExecute();
 
 }
