@@ -31,13 +31,13 @@ void spi(){
     if (datacount<40)
     {
       sender=senddata[datacount];
-      Serial.println(sender,HEX);
+      msLog(sender,HEX);
       catchdata[datacount]=SPI.transfer(sender);
     }
     else
     {
       sender=0x00;
-      Serial.println(sender,HEX);
+      msLog(sender,HEX);
       catchdata[datacount]=SPI.transfer(sender);
     }
     delayMicroseconds(100);

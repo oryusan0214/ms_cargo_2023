@@ -69,8 +69,8 @@ SLNG msSetTimer( ULNG CallBackTime, void* Object, void (*Callback)(void* objectt
 	
 	/* タイマー上限チェック ------------------------------------------------- */
 	for( ulCounter = 0; ulCounter < MS_TIME_NUM_MAX; ulCounter ++ ) {
-		//Serial.println("--- cnt ---");
-		//Serial.println(ulCounter);
+		//msLog("--- cnt ---");
+		//msLog(ulCounter);
 		if( g_CallbackTbl[ulCounter].Callback == NULL ) {
 			break;
 		}
@@ -239,7 +239,7 @@ void msTimeCallbackExecute( void )
 			/* 上記且つタイマーが満了しているか */
 			if( ptr->TimerCounter >= ptr->CallbackTime ) {
 				/* コールバック関数呼び出し */
-				//Serial.println("--- callback start ---");
+				//msLog("--- callback start ---");
 				ptr->Callback( ptr->object );
 				ptr->TimerCounter = 0;
 			}

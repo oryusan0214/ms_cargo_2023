@@ -9,7 +9,7 @@ typedef struct angle{
 }angle;
 int test()
 {
-  //Serial.println("\n--- TEST START ----");
+  //msLog("\n--- TEST START ----");
 
   scene();
   /*
@@ -66,23 +66,23 @@ int test()
   /*
   senderPdata=&senderdata;
   memcpy(&angle_test,senderPdata,sizeof(angle_test));
-  Serial.println(angle_test.xangle);
-  Serial.println(angle_test.yangle);
-  Serial.println(angle_test.zangle);
+  msLog(angle_test.xangle);
+  msLog(angle_test.yangle);
+  msLog(angle_test.zangle);
   memcpy(test2,&senderPdata->weight,sizeof(test2));
-  Serial.println(test2);
+  msLog(test2);
   */
 
   //spi();
   /*
-  Serial.println("--- float ---");
+  msLog("--- float ---");
   sprintf(f_test_output,"%#x%#x",f_test);
-  Serial.println(f_test_output);
+  msLog(f_test_output);
   sprintf(f_test_output,"%#x%#x",f_test2);
-  Serial.println(f_test_output);
+  msLog(f_test_output);
   
 
-  Serial.println("--- char ---");
+  msLog("--- char ---");
   c_test[0] = (uint8_t) ((f_test & 0xff000000) >> 24);
   c_test[1] = (uint8_t) ((f_test & 0x00ff0000) >> 16);
   c_test[2] = (uint8_t) ((f_test & 0x0000ff00) >> 8);
@@ -95,34 +95,34 @@ int test()
   */
   /*
   uint8_test = (uint8_t *) &f_test;
-  Serial.println(uint8_test[0],HEX);
-  Serial.println(uint8_test[1],HEX);
-  Serial.println(uint8_test[2],HEX);
-  Serial.println(uint8_test[3],HEX);
+  msLog(uint8_test[0],HEX);
+  msLog(uint8_test[1],HEX);
+  msLog(uint8_test[2],HEX);
+  msLog(uint8_test[3],HEX);
 
   uint8_test = (uint8_t*) &f_test2;
-  Serial.println(uint8_test[0],HEX);
-  Serial.println(uint8_test[1],HEX);
-  Serial.println(uint8_test[2],HEX);
-  Serial.println(uint8_test[3],HEX);
+  msLog(uint8_test[0],HEX);
+  msLog(uint8_test[1],HEX);
+  msLog(uint8_test[2],HEX);
+  msLog(uint8_test[3],HEX);
   
   memccpy(c_test, &f_test, sizeof(f_test), sizeof(f_test));
   memccpy(c_test+4, &f_test2, sizeof(f_test2),sizeof(f_test2));
-  Serial.println("--- char ---");
-  Serial.println(c_test[0],HEX);
-  Serial.println(c_test[1],HEX);
-  Serial.println(c_test[2],HEX);
-  Serial.println(c_test[3],HEX);
-  Serial.println(c_test[4],HEX);
-  Serial.println(c_test[5],HEX);
-  Serial.println(c_test[6],HEX);
-  Serial.println(c_test[7],HEX);
+  msLog("--- char ---");
+  msLog(c_test[0],HEX);
+  msLog(c_test[1],HEX);
+  msLog(c_test[2],HEX);
+  msLog(c_test[3],HEX);
+  msLog(c_test[4],HEX);
+  msLog(c_test[5],HEX);
+  msLog(c_test[6],HEX);
+  msLog(c_test[7],HEX);
   */ 
   
 
   
 
-  //Serial.println("\n--- END ----");
+  //msLog("\n--- END ----");
 
 
 

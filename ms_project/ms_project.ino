@@ -16,7 +16,6 @@
 #pragma once
 #include "common.h"
 #include "Arduino.h"
-#include "init.h"
 #include <SPI.h>
 #include "test.h"
 #include "time.h"
@@ -26,7 +25,7 @@
 #include "rod.h"
 #include "hand.h"
 /* ------------------------------------------------------------------------ */
-/* */
+/* ArduinoMegaでの変数のサイズです */
 //int=1byte
 //short=2byte
 //long=4byte
@@ -45,7 +44,7 @@ void setup()
   msRODInit();
   SPI.begin();
   digitalWrite(SS, HIGH);
-  Serial.println("System Start");
+  msLog("System Start");
   delay(1);
 }
 

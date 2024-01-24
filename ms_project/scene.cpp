@@ -1,13 +1,19 @@
 /* -------------------------------------------------------------------------- */
-/* dummy.ino																 																  */
-/* シ  ス  テ  ム  メ  イ  ン												 												  */
-/* アプリケーションエントリーポイントです。(Arduinoではここが								  */
-/*																					エントリポジションです。)					*/
+/* scene.cpp																                                  */
+/* デモで動かすためのsceneをコントロールするソースコードです。								*/
+/* sceneを関数で作成しています。これはメモリの削減をするためです。					  */
+/* ・straightSceneInput：6足でまっすぐに歩くシーンを管理しています。				  */
+/* ・lTurnSceneInput   ：6足で旋回をするシーンを管理しています。			        */
+/* ・rTurnSceneInput   ：6足で旋回をするシーンを管理しています。			        */
+/* ・InitSceneInput    ：6足の初期化をするシーンを管理しています。			      */
+/* ・ArmSceneInput     ：アームを上げるシーンを管理しています。				        */
+/* ・ArmDownSceneInput ：アームを下げるシーンを管理しています。				        */
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-/* 番号		更新履歴								日付　氏名																  */
+/* 番号		更新履歴								日付		氏名		                            */
 /* -------------------------------------------------------------------------- */
-/* 000000	新規作成								2023/12/04　山田龍之介		 								  */
+/* 000001	新規作成					2023/12/15  山田　龍之介		 					            */
+/* 000002	最終更新					2024/01/17  山田　龍之介		 					            */
 /* -------------------------------------------------------------------------- */
 #include "scene.h"
 #include "servo.h"
@@ -19,7 +25,13 @@
 #include "time.h"
 
 
-
+/* -------------------------------------------------------------------------- */
+/* 関数名		：sceneInput													                            */
+/* 機能概要	：sceneで設定したシナリオに合わせて実行するsceneを返す処理				*/
+/* 引数			：uin8_t*		 ：checker	今のシーン・シナリオの状態を格納				  */
+/* 戻り値		：Scene			 ：nowscene 今のシーンを返す										      */
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene sceneInuput(uint8_t *checker)
 {
   static uint16_t scenecounter = 0;
@@ -27,7 +39,7 @@ Scene sceneInuput(uint8_t *checker)
   uint8_t scenechecker = SCENE_OK;
   
   
-      
+  //シナリオの設定
   uint8_t scene[] = {
                       SCENE_INIT,
                        
@@ -55,24 +67,29 @@ Scene sceneInuput(uint8_t *checker)
                       
                       
   
-  
+  //初期化用のシーン
   //uint8_t scene[] = {SCENE_INIT,SCENE_INIT};
+
   Scene nowscene;
+  
+  //現在のシナリオ数を表示
+  msLog("--- scenariocounter ---");
+  msLog(scenariocounter);
+  //現在のシーン数を表示
+  msLog("--- scenecounter ---");
+  msLog(scenecounter);
 
-  Serial.println("--- scenariocounter ---");
-  Serial.println(scenariocounter);
-  Serial.println("--- scenecounter ---");
-  Serial.println(scenecounter);
-
+  //シナリオの最後まで行ったら終了
   if (scenariocounter >= sizeof(scene) / sizeof(scene[0]))
   {
     scenariocounter = sizeof(scene) / sizeof(scene[0]);
     *checker = SCENE_END;
-    Serial.println("--- checker ---");
-    Serial.println(*checker);
+    msLog("--- checker ---");
+    msLog(*checker);
     return;
   }
 
+  //シナリオ振り分け
   switch (scene[scenariocounter])
   {
   case SCENE_STRAIGHT:
@@ -97,22 +114,25 @@ Scene sceneInuput(uint8_t *checker)
     break;
   }
 
+  //シーンの引数が正常な場合
   if (scenechecker == SCENE_OK)
   {
     scenecounter++;
     *checker = SCENE_OK;
-    Serial.println("--- checker ---");
-    Serial.println(*checker);
+    msLog("--- checker ---");
+    msLog(*checker);
     return nowscene;
   }
+  //シーンの引数が異常な場合
   if (scenechecker == SCENE_NG)
   {
     msLog("--- sceneInuput scenechecker error ---\n");
     *checker = SCENE_NG;
-    Serial.println("--- checker ---");
-    Serial.println(*checker);
+    msLog("--- checker ---");
+    msLog(*checker);
     return;
   }
+  //シナリオに含まれるシーンが最後まで行った場合
   if (scenechecker == SCENE_END)
   {
     scenecounter = 0;
@@ -123,6 +143,15 @@ Scene sceneInuput(uint8_t *checker)
   }
   return;
 }
+
+/* -------------------------------------------------------------------------- */
+/* 関数名		：straightSceneInput													                    */
+/* 機能概要	：straightで設定した値に合わせてsceneを返す処理				            */
+/* 引数			：uin16_t*	 ：counter	シーンの数を格納                				  */
+/* 引数			：uin8_t*		 ：checker	今のシーンの状態を格納				            */
+/* 戻り値		：Scene			 ：straight[counter] 今のシーンを返す									*/
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene straightSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene straight[] = {
@@ -164,8 +193,8 @@ Scene straightSceneInput(uint16_t counter, uint8_t *checker)
       {130, 72, 120, 140, 35, 95, 140, 72, 65, 135, 35, 60, 140, 35, 90, 130, 33, 115, 30, 30, 00, 1}
 
   };
-  Serial.println("--- straightSceneInput ---");
-  Serial.println(counter);
+  msLog("--- straightSceneInput ---");
+  msLog(counter);
   if (counter < 0)
   {
     msLog("--- straightSceneInput counter error ---\n");
@@ -181,6 +210,15 @@ Scene straightSceneInput(uint16_t counter, uint8_t *checker)
   checker = SCENE_OK;
   return straight[counter];
 }
+
+/* -------------------------------------------------------------------------- */
+/* 関数名		：lTurnSceneInput													                        */
+/* 機能概要	：LTurnで設定した値に合わせてsceneを返す処理				              */
+/* 引数			：uin16_t*	 ：counter	シーンの数を格納                				  */
+/* 引数			：uin8_t*		 ：checker	今のシーンの状態を格納				            */
+/* 戻り値		：Scene			 ：LScene[counter] 今のシーンを返す										*/
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene lTurnSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene LTurn[] = {
@@ -222,8 +260,8 @@ Scene lTurnSceneInput(uint16_t counter, uint8_t *checker)
       {140, 77, 130, 140, 35, 95, 140, 82, 65, 140, 40, 60, 140, 35, 90, 125, 43, 115, 30, 30, 00, 1},
 
   };
-  Serial.println("--- lTurnSceneInput ---");
-  Serial.println(counter);
+  msLog("--- lTurnSceneInput ---");
+  msLog(counter);
   if (counter < 0)
   {
     msLog("--- lTurnSceneInput counter error ---\n");
@@ -239,6 +277,14 @@ Scene lTurnSceneInput(uint16_t counter, uint8_t *checker)
   return LTurn[counter];
 }
 
+/* -------------------------------------------------------------------------- */
+/* 関数名		：rTurnSceneInput													                        */
+/* 機能概要	：RTurnで設定した値に合わせてsceneを返す処理				              */
+/* 引数			：uin16_t*	 ：counter	シーンの数を格納                				  */
+/* 引数			：uin8_t*		 ：checker	今のシーンの状態を格納				            */
+/* 戻り値		：Scene			 ：RScene[counter] 今のシーンを返す										*/
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene rTurnSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene RTurn[] = {
@@ -278,8 +324,8 @@ Scene rTurnSceneInput(uint16_t counter, uint8_t *checker)
       {140, 77, 125, 140, 35, 100, 140, 82, 70, 140, 40, 65, 140, 35, 95, 125, 43, 120, 30, 30, 00, 1},
       {140, 77, 120, 140, 35, 95, 140, 82, 65, 140, 40, 60, 140, 35, 90, 125, 43, 115, 30, 30, 00, 1},
       };
-  Serial.println("--- rTurnSceneInput ---");
-  Serial.println(counter);
+  msLog("--- rTurnSceneInput ---");
+  msLog(counter);
   if (counter < 0)
   {
     msLog("--- rTurnSceneInput counter error ---\n");
@@ -295,13 +341,21 @@ Scene rTurnSceneInput(uint16_t counter, uint8_t *checker)
   return RTurn[counter];
 }
 
+/* -------------------------------------------------------------------------- */
+/* 関数名		：InitSceneInput												                          */
+/* 機能概要	：Initで設定した値に合わせてsceneを返す処理				                */
+/* 引数			：uin16_t*	 ：counter	シーンの数を格納                				  */
+/* 引数			：uin8_t*		 ：checker	今のシーンの状態を格納				            */
+/* 戻り値		：Scene			 ：Init[counter] 今のシーンを返す										  */
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene InitSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Init[] = {
       // 初期位置
       {140, 70, 120, 140, 35, 95, 140, 70, 65, 140, 35, 60, 140, 35, 90, 125, 35, 115, 30, 30, 0, 0}};
-  Serial.println("--- InitSceneInput ---");
-  Serial.println(counter);
+  msLog("--- InitSceneInput ---");
+  msLog(counter);
   if (counter < 0)
   {
     msLog("--- InitSceneInput counter error ---\n");
@@ -317,6 +371,14 @@ Scene InitSceneInput(uint16_t counter, uint8_t *checker)
   return Init[counter];
 }
 
+/* -------------------------------------------------------------------------- */
+/* 関数名		：ArmSceneInput												                            */
+/* 機能概要	：Armで設定した値に合わせてsceneを返す処理				                */
+/* 引数			：uin16_t*	 ：counter	シーンの数を格納                				  */
+/* 引数			：uin8_t*		 ：checker	今のシーンの状態を格納				            */
+/* 戻り値		：Scene			 ：Arm[counter] 今のシーンを返す										  */
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Arm[] = {
@@ -330,8 +392,8 @@ Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
       
 
   };
-  Serial.println("--- ArmSceneInput ---");
-  Serial.println(counter);
+  msLog("--- ArmSceneInput ---");
+  msLog(counter);
   if (counter < 0)
   {
     msLog("--- InitSceneInput counter error ---\n");
@@ -346,6 +408,15 @@ Scene ArmSceneInput(uint16_t counter, uint8_t *checker)
   }
   return Arm[counter];
 }
+
+/* -------------------------------------------------------------------------- */
+/* 関数名		：ArmDownSceneInput												                        */
+/* 機能概要	：Armで設定した値に合わせてsceneを返す処理				                */
+/* 引数			：uin16_t*	 ：counter	シーンの数を格納                				  */
+/* 引数			：uin8_t*		 ：checker	今のシーンの状態を格納				            */
+/* 戻り値		：Scene			 ：Arm[counter] 今のシーンを返す										  */
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 Scene ArmDownSceneInput(uint16_t counter, uint8_t *checker)
 {
   Scene Arm[] = {
@@ -359,8 +430,8 @@ Scene ArmDownSceneInput(uint16_t counter, uint8_t *checker)
       
 
   };
-  Serial.println("--- ArmSceneInput ---");
-  Serial.println(counter);
+  msLog("--- ArmSceneInput ---");
+  msLog(counter);
   if (counter < 0)
   {
     msLog("--- InitSceneInput counter error ---\n");
@@ -376,6 +447,13 @@ Scene ArmDownSceneInput(uint16_t counter, uint8_t *checker)
   return Arm[counter];
 }
 
+/* -------------------------------------------------------------------------- */
+/* 関数名		：sceneBusy												                                */
+/* 機能概要	：各モータが動いている最中かを判断する処理				                */
+/* 引数			：なし	     ：なし                				                        */
+/* 戻り値		：int			   ：OK (0) / NG (1)										                */
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 int sceneBusy()
 {
   uint8_t handbusy = 0;
@@ -403,6 +481,13 @@ int sceneBusy()
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* 関数名		：scene												                                    */
+/* 機能概要	：実際にインプットシーンでもらった数値を実行する処理				      */
+/* 引数			：なし	     ：なし                				                        */
+/* 戻り値		：int			   ：OK (0) / NG (1)	/END (2)									        */
+/* 作成日		：2023/12/15	山田　龍之介	新規作成      					              */
+/* -------------------------------------------------------------------------- */
 int scene()
 {
   static uint16_t scenecounter = 0;
@@ -423,24 +508,24 @@ int scene()
   if (sceneNext == SCENE_OK)
   {
 
-    Serial.println("--- Scene Input Start ---");
+    msLog("--- Scene Input Start ---");
     delay(100);
     nowscene = sceneInuput(&scenechecker); // シーンデータの取り込み
 
-    Serial.println("--- scenechecker ---");
-    Serial.println(scenechecker);
+    msLog("--- scenechecker ---");
+    msLog(scenechecker);
     if (scenechecker == SCENE_NG)
     {
-      Serial.println("--- *ERROR SceneInput PARAM *---");
+      msLog("--- *ERROR SceneInput PARAM *---");
       return SCENE_END;
     }
     if (scenechecker == SCENE_END)
     {
-      Serial.println("--- scene counter over ---");
+      msLog("--- scene counter over ---");
       return SCENE_END;
     }
 
-    Serial.println("--- angle set ---");
+    msLog("--- angle set ---");
     angle[0] = nowscene.lf_neemotor;             // servodataを抽出
     angle[1] = nowscene.lf_pitch_hipjointmotor;  // servodataを抽出
     angle[2] = nowscene.lf_yaw_hipjointmotor;    // servodataを抽出
@@ -472,7 +557,7 @@ int scene()
   }
   else if (sceneNext == SCENE_NG)
   {
-    //Serial.println("--- sceneBusy ---");
+    //msLog("--- sceneBusy ---");
     return SCENE_NG;
   }
 }

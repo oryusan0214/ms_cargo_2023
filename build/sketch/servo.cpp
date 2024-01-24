@@ -131,8 +131,8 @@ SLNG msServoGetBusy(UCHR* busyflags, USHT max)
 
 	/* ビジーデータコピーして返却 */
 	for (slIndex = 0; slIndex < SERVO_MAX; slIndex++) {
-		//Serial.println("busy base");
-    	//Serial.println(g_Mng[slIndex].busyflg);
+		//msLog("busy base");
+    	//msLog(g_Mng[slIndex].busyflg);
 		busyflags[slIndex] = g_Mng[slIndex].busyflg;
 	}
 	return SERVO_OK;
@@ -165,30 +165,30 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 	SLNG slCounter	= 0;
 	SLNG slRet		= SERVO_OK;
 	SINT slAng	= 0;
-	//Serial.println("--- (1) ---\n");
+	//msLog("--- (1) ---\n");
 	/* 引数チェック(OnjectはNULLを許可する)---------------------------------- */
 	if ((returns == NULL) || (angles == NULL) || (max != SERVO_MAX)) {
 		msLog("引数エラー７");
 		return SERVO_PARAM;
 	}
-	//Serial.println("--- (2) ---\n");
+	//msLog("--- (2) ---\n");
 	/* サーボの個数分ループして各種設定 */
 	for (slCounter == 0; slCounter < SERVO_MAX; slCounter++) {
 		/* サーボがビジー時は上位層の設定ミス */
 		if (g_Mng[slCounter].busyflg == SERVO_BUSY) {
-			Serial.println("--- (8) ---\n");
+			msLog("--- (8) ---\n");
 			returns[slCounter] = SERVO_BUSY;
 			continue;
 		}
 		/* ##要確認：サーボの角度範囲がおかしい場合はパラメータエラー */
 		if ((angles[slCounter] < ang_min[slCounter]) || ((angles[slCounter] > ang_max[slCounter]) && (angles[slCounter] != SERVO_NOSET))) {
-			//Serial.println("--- (9) ---\n");
-			//Serial.println(slCounter);
-			//Serial.println(angles[slCounter]);
+			//msLog("--- (9) ---\n");
+			//msLog(slCounter);
+			//msLog(angles[slCounter]);
 			returns[slCounter] = SERVO_PARAM;
 			continue;
 		}
-		//Serial.println("--- (3) ---\n");
+		//msLog("--- (3) ---\n");
 		/* サーボモーター設定可能と判断 --------------------------------------*/
 		/* 指定角度からサーボ移動に必要な時間を算出 */
 		SSHT sTmpAngle = 0;
@@ -199,7 +199,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		}
 		/* ##define値を確認 移動予定角度から時間へ変換 */
 		sTmpAngle = sTmpAngle * SERVO_MOVETIME;
-		//Serial.println("--- (4) ---\n");
+		//msLog("--- (4) ---\n");
 		if(sTmpAngle == 0){
 			sTmpAngle++;
 		}
@@ -219,7 +219,7 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
 		slAng = g_Mng[slCounter].oldangles;
 
 		/* ##サーボモーターのレジスタ設定 */
-		//Serial.println("--- (5) ---\n");
+		//msLog("--- (5) ---\n");
 		/* 角度（0～270）をPWMの1パルス幅内でのHIGHの時間(ms)に変換 */
 		/* 1,7は特殊サーボの為角度270に設定する */
     	if(slCounter == 1 || slCounter == 7){
@@ -227,19 +227,19 @@ SLNG msServoSet(SLNG* returns, uint16_t* angles, USHT max)
     	}else{
 		  	slAng = map(g_Mng[slCounter].oldangles, 0, 180, 0, 2000);
     	}
-		//Serial.println("--- (6) ---\n");
+		//msLog("--- (6) ---\n");
 		/* 500ms - 2500msが範囲の為 +500 */
     	slAng = slAng + 500;
     	/* 10進数を12進数に変換（？） */
     	slAng = map(slAng, 0, 10000, 0, 4095);
-		//Serial.println("koko kiteruyo");
+		//msLog("koko kiteruyo");
 		/* idに対応したドライバにpwmセット */
 		if(slCounter < (SERVO_MAX / 2) ){
   			leftPwm.setPWM(slCounter, 0, slAng);
 		}else{
 			rightPwm.setPWM(slCounter - (SERVO_MAX / 2), 0, slAng);
 		}
-		//Serial.println("--- (7) ---\n");
+		//msLog("--- (7) ---\n");
 		/* 必要ならディレイ */
   		// delay(1);
 	}

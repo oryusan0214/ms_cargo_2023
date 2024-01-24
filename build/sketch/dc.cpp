@@ -233,26 +233,26 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 		/* DCがビジー時は上位層の設定ミス */
 		if (dc_Mng[dcCounter].busyflg == DC_BUSY) {
 			returns[dcCounter] = DC_BUSY;
-			Serial.println("---- dc err 1 ----");
+			msLog("---- dc err 1 ----");
 			continue;
 		}
 		/* ##要確認：DCの角度範囲がおかしい場合はパラメータエラー */
 		if ((angles[dcCounter] < DC_ANG_MIN) || ((angles[dcCounter] > DC_ANG_MAX) && (angles[dcCounter] != DC_NOSET))) {
 			returns[dcCounter] = DC_PARAM;
-			Serial.println("---- dc err 2 ----");
+			msLog("---- dc err 2 ----");
 			continue;
 		}
 		/* DCモーター設定可能と判断 --------------------------------------*/
 		
 		/* 指定角度からDC移動に必要な時間を算出 */
 		SSHT dTmpAngle = 0;
-		bool dcUD = false;						/* 回転方向を判断する				 */
+		uint8_t dcUD = false;						/* 回転方向を判断する				 */
 												/* 初期は逆転(マイナス方向)	false 0 */
 		dTmpAngle = dc_Mng[dcCounter].oldangles - angles[dcCounter];
 
-		Serial.println("---- dt ----");
-		Serial.println(dTmpAngle);
-		Serial.println("----  ----");
+		msLog("---- dt ----");
+		msLog(dTmpAngle);
+		msLog("----  ----");
 		/* マイナス角度をプラスに補正 */
 		if (dTmpAngle < 0) {
 			dTmpAngle = dTmpAngle * -1;
@@ -265,9 +265,9 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			dTmpAngle++;
 		}
 
-		Serial.println("---- DT ----");
-		Serial.println(dTmpAngle);
-		Serial.println("----  ----");
+		msLog("---- DT ----");
+		msLog(dTmpAngle);
+		msLog("----  ----");
 
 		/* タイマー計算＆コールバック設定 */
 		dcRet = msSetTimer(dTmpAngle, &dc_Mng[dcCounter], msDCTimerCallback);
@@ -293,18 +293,18 @@ SLNG msDCSet(SLNG* returns, uint16_t* angles, USHT max)
 			LmyPID.Compute();						/* PID演算 */
 			/*speed = abs((int)LOutput);				/* 出力値格納 */
 			/*speed = map(speed,0,DC_SPEED,0,4095);/* パルス幅の値に変換 */
-			//Serial.println(DC_SPEED);
+			//msLog(DC_SPEED);
 			/* 方向指示 + PWM設定 */
 			if(dcUD == true) {
-				Serial.println("---- UD ----");
-				Serial.println(dcUD);
-				Serial.println("----  ----");
+				msLog("---- UD ----");
+				msLog(dcUD);
+				msLog("----  ----");
 				digitalWrite(DC_L_DIR_PIN,LOW);
 				dcPwm.setPWM(0, 0, 4095);
 			}else{
-				Serial.println("---- UD ----");
-				Serial.println(dcUD);
-				Serial.println("----  ----");
+				msLog("---- UD ----");
+				msLog(dcUD);
+				msLog("----  ----");
 				digitalWrite(DC_L_DIR_PIN,HIGH);
 				dcPwm.setPWM(0, 0, 4095);
 			}

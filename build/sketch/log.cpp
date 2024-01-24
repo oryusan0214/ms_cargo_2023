@@ -111,7 +111,7 @@ void msLog( const char* Message, ... )
 	
 	/* リングバッファ初期化チェック ----------------------------------------- */
 	if( msLogIsInit( ) != MS_LOG_INIT_FLG_ON ) {
-		Serial.println(" System not init ");
+		msLog(" System not init ");
 		return;
 	}
 	
@@ -129,10 +129,10 @@ void msLog( const char* Message, ... )
 	
 	/* T.B.D. 時間計測のシステムを入れる事 ---------------------------------- */
 	/* リングバッファへ情報を格納すること */
-  /* Serial.printlnのフォーマットに合わせてメモリにコピー */
+  /* msLogのフォーマットに合わせてメモリにコピー */
   //sprintf(scStrCopy, "[%010d] %s\n", ulSystemTime, scStr);
   /* 出力 */
-	Serial.println(scStr);
+	msLog(scStr);
 
 	return;
 }

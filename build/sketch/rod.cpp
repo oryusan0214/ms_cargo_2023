@@ -234,7 +234,7 @@ SLNG msRODSet(SLNG* returns, uint16_t* distance)
 	RODmyPID.Compute();						/* PID演算 */
 	/*speed = abs((int)RODOutput);				/* 出力値格納 */
 	/*speed = map(speed,0,ROD_SPEED,0,4095);/* パルス幅の値に変換 */
-	//Serial.println("---koko---");
+	//msLog("---koko---");
 	/* 方向指示 + PWM設定 */
 	if(rodUD == true) {
 		digitalWrite(ROD_DIR_PIN,LOW);

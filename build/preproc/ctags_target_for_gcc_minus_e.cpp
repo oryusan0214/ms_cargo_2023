@@ -20,14 +20,13 @@
 # 20 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 21 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 22 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
-# 23 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 
+# 24 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 25 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 26 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 # 27 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
-# 28 "C:\\WORK\\学校\\未来創造展\\ms_project\\ms_project\\ms_project.ino" 2
 /* ------------------------------------------------------------------------ */
-/* */
+/* ArduinoMegaでの変数のサイズです */
 //int=1byte
 //short=2byte
 //long=4byte
@@ -46,7 +45,7 @@ void setup()
   msRODInit();
   SPI.begin();
   digitalWrite(SS, 0x1);
-  Serial.println("System Start");
+  msLog("System Start");
   delay(1);
 }
 
